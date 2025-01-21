@@ -14,6 +14,7 @@ AUDIO_FORMAT = "audio_format"
 CREATE_PLAYLIST_FILE = "create_playlist_file"
 CREDENTIALS_PATH = "credentials_path"
 DOWNLOAD_QUALITY = "download_quality"
+DOWNLOAD_REAL_TIME = "download_real_time"
 FFMPEG_ARGS = "ffmpeg_args"
 FFMPEG_PATH = "ffmpeg_path"
 LANGUAGE = "language"
@@ -128,6 +129,12 @@ CONFIG_VALUES = {
         "choices": list(Quality),
         "args": ["--download-quality"],
         "help": "Audio download quality (auto for highest available)",
+    },
+    DOWNLOAD_REAL_TIME: {
+        "default": False,
+        "type": bool,
+        "args": ["--download-real-time"],
+        "help": "Download at the same rate as the track being played",
     },
     ARTWORK_SIZE: {
         "default": "large",
@@ -261,6 +268,7 @@ class Config:
     audio_format: AudioFormat
     credentials_path: Path
     download_quality: Quality
+    download_real_time: bool
     ffmpeg_args: str
     ffmpeg_path: str
     language: str
