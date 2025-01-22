@@ -283,7 +283,7 @@ class App:
                     desc=f"({count}/{total}) {track.name}",
                     total=track.input_stream.size,
                 ) as p_bar:
-                    file = track.write_audio_stream(output, p_bar)
+                    file = track.write_audio_stream(output, p_bar, self.__config.download_real_time)
 
                 # Download lyrics
                 if playable.type == PlayableType.TRACK and self.__config.lyrics_file:
