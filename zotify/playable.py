@@ -215,6 +215,8 @@ class Track(PlayableContentFeeder.LoadedStream, Playable):
         """
         if not isinstance(output, Path):
             output = Path(output).expanduser()
+        if not real_time:
+            return super().write_audio_stream(output)
         file = f"{output}.ogg"
         time_start = time()
         downloaded = 0
@@ -223,12 +225,11 @@ class Track(PlayableContentFeeder.LoadedStream, Playable):
             while chunk != b"":
                 chunk = self.input_stream.stream().read(1024)
                 p_bar.update(f.write(chunk))
-                if real_time:
-                    downloaded += len(chunk)
-                    delta_current = time() - time_start
-                    delta_required = (downloaded / self.input_stream.size) * (self.duration/1000)
-                    if delta_required > delta_current:
-                        sleep(delta_required - delta_current)
+                downloaded += len(chunk)
+                delta_current = time() - time_start
+                delta_required = (downloaded / self.input_stream.size) * (self.duration/1000)
+                if delta_required > delta_current:
+                    sleep(delta_required - delta_current)
         return LocalFile(Path(file), AudioFormat.VORBIS)
 
 
