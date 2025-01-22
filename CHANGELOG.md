@@ -1,4 +1,4 @@
-# STILL IN DEVELOPMENT, EVERYTHING HERE IS SUBJECT TO CHANGE!
+# STILL IN DEVELOPMENT, EVERYTHING HERE IS SUBJECT TO CHANGE
 
 ## v1.0.0
 
@@ -83,7 +83,6 @@
 - Removed the following config options due to their corresponding features being removed:
   - `bulk_wait_time`
   - `chunk_size`
-  - `download_real_time`
   - `md_allgenres`
   - `md_genredelimiter`
   - `metadata_delimiter`
