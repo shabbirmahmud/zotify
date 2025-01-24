@@ -103,7 +103,6 @@ def main():
             parser.add_argument(
                 *v["args"],
                 action=OptionalOrFalse,
-                default=v["default"],
                 help=v["help"],
             )
         else:
