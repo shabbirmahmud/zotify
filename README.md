@@ -60,6 +60,7 @@ Downloads specified items. Accepts any combination of track, album, playlist, ep
 | output_playlist_episode | --output-playlist-episode | File layout for episodes in a playlist              | {playlist}/{playlist_number}. {episode_number} - {title}   |
 | output_podcast          | --output-podcast          | File layout for saved podcasts                      | {podcast}/{episode_number} - {title}                       |
 | download_quality        | --download-quality        | Audio download quality (auto for highest available) |                                                            |
+| download_real_time      | --download-real-time      | Downloads songs as fast as they would be played     |                                                            |
 | audio_format            | --audio-format            | Audio format of final track output                  |                                                            |
 | transcode_bitrate       | --transcode-bitrate       | Transcoding bitrate (-1 to use download rate)       |                                                            |
 | ffmpeg_path             | --ffmpeg-path             | Path to ffmpeg binary                               |                                                            |
