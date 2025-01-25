@@ -38,7 +38,7 @@ Downloads specified items. Accepts any combination of track, album, playlist, ep
 
 ### Basic options
 
-```
+```text
     -p,  --playlist         Download selection of user's saved playlists
     -lt, --liked-tracks     Download user's liked tracks
     -le, --liked-episodes   Download user's liked episodes
