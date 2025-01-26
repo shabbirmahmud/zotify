@@ -65,6 +65,7 @@ class Playable:
 
     def create_output(
         self,
+        ext: str,
         library: Path | str = Path("./"),
         output: str = "{title}",
         replace: bool = False,
@@ -86,7 +87,7 @@ class Playable:
                     "{" + meta.name + "}", fix_filename(meta.string)
                 )
         file_path = library.joinpath(output).expanduser()
-        if file_path.exists() and not replace:
+        if file_path.with_suffix("." + ext).exists() and not replace:
             raise FileExistsError("File already downloaded")
         else:
             file_path.parent.mkdir(parents=True, exist_ok=True)
