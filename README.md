@@ -25,6 +25,7 @@ Built on [Librespot](https://github.com/kokarare1212/librespot-python).
 
 Requires Python 3.11 or greater. \
 Optionally requires FFmpeg to save tracks as anything other than Ogg Vorbis.
+(FFmpeg installation instructions available [here](https://github.com/KDalu/zotify/blob/main/INSTALLATION.md))
 
 Enter the following command in terminal to install Zotify. \
 `python -m pip install git+https://github.com/KDalu/zotify.git`
