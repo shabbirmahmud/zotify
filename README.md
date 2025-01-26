@@ -66,6 +66,7 @@ Downloads specified items. Accepts any combination of track, album, playlist, ep
 | ffmpeg_path             | --ffmpeg-path             | Path to ffmpeg binary                               |                                                            |
 | ffmpeg_args             | --ffmpeg-args             | Additional ffmpeg arguments when transcoding        |                                                            |
 | save_credentials        | --save-credentials        | Save login credentials to a file                    |                                                            |
+| replace_existing        | --replace-existing        | Redownload and replace songs if they already exist  |                                                            |
 
 </details>
 
