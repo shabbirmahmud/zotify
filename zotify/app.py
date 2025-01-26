@@ -267,9 +267,10 @@ class App:
                 track.metadata.extend(playable.metadata)
                 try:
                     output = track.create_output(
+                        self.__config.audio_format.value.ext,
                         playable.library,
                         playable.output_template,
-                        self.__config.replace_existing,
+                        self.__config.replace_existing
                     )
                 except FileExistsError:
                     Logger.log(
