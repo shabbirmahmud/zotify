@@ -27,7 +27,7 @@ Requires Python 3.11 or greater. \
 Optionally requires FFmpeg to save tracks as anything other than Ogg Vorbis.
 
 Enter the following command in terminal to install Zotify. \
-`python -m pip install https://get.zotify.xyz`
+`python -m pip install git+https://github.com/KDalu/zotify.git`
 
 ## General Usage
 
