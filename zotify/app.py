@@ -250,9 +250,16 @@ class App:
                 # Get track data
                 if playable.type == PlayableType.TRACK:
                     with Loader("Fetching track..."):
-                        track = self.__session.get_track(
-                            playable.id, self.__config.download_quality
-                        )
+                        try:
+                            track = self.__session.get_track(
+                                playable.id, self.__config.download_quality
+                            )
+                        except RuntimeError as err:
+                            Logger.log(
+                                LogChannel.SKIPS,
+                                f'Skipping song id = {playable.id}: {err}',
+                            )
+                            continue
                 elif playable.type == PlayableType.EPISODE:
                     with Loader("Fetching episode..."):
                         track = self.__session.get_episode(playable.id)
