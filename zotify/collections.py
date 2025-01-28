@@ -106,6 +106,9 @@ class Playlist(Collection):
                         metadata,
                     )
                 )
+            elif playable_type == "local":
+                # Ignore local files
+                pass
             else:
                 raise ValueError("Unknown playable content", playable_type)
 
