@@ -22,12 +22,14 @@ class Album(Collection):
         album = api.get_metadata_4_album(AlbumId.from_base62(b62_id))
         for disc in album.disc:
             for track in disc.track:
+                metadata = [MetadataEntry("key", bytes_to_base62(track.gid))]
                 self.playables.append(
                     PlayableData(
                         PlayableType.TRACK,
                         bytes_to_base62(track.gid),
                         config.album_library,
                         config.output_album,
+                        metadata,
                     )
                 )
 
@@ -44,12 +46,14 @@ class Artist(Collection):
             album = api.get_metadata_4_album(AlbumId.from_hex(album_group.album[0].gid))
             for disc in album.disc:
                 for track in disc.track:
+                    metadata = [MetadataEntry("key", bytes_to_base62(track.gid))]
                     self.playables.append(
                         PlayableData(
                             PlayableType.TRACK,
                             bytes_to_base62(track.gid),
                             config.album_library,
                             config.output_album,
+                            metadata,
                         )
                     )
 
@@ -58,12 +62,14 @@ class Show(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
         show = api.get_metadata_4_show(ShowId.from_base62(b62_id))
         for episode in show.episode:
+            metadata = [MetadataEntry("key", bytes_to_base62(episode.gid))]
             self.playables.append(
                 PlayableData(
                     PlayableType.EPISODE,
                     bytes_to_base62(episode.gid),
                     config.podcast_library,
                     config.output_podcast,
+                    metadata,
                 )
             )
 
@@ -77,6 +83,7 @@ class Playlist(Collection):
             playable_type = split[1]
             playable_id = split[2]
             metadata = [
+                MetadataEntry("key", playable_id),
                 MetadataEntry("playlist", playlist.attributes.name),
                 MetadataEntry("playlist_length", playlist.length),
                 MetadataEntry("playlist_owner", playlist.owner_username),
@@ -115,20 +122,27 @@ class Playlist(Collection):
 
 class Track(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
+        metadata = [MetadataEntry("key", b62_id)]
         self.playables.append(
             PlayableData(
-                PlayableType.TRACK, b62_id, config.album_library, config.output_album
+                PlayableType.TRACK,
+                b62_id,
+                config.album_library,
+                config.output_album,
+                metadata,
             )
         )
 
 
 class Episode(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
+        metadata = [MetadataEntry("key", b62_id)]
         self.playables.append(
             PlayableData(
                 PlayableType.EPISODE,
                 b62_id,
                 config.podcast_library,
                 config.output_podcast,
+                metadata,
             )
         )
