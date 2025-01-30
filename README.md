@@ -2,10 +2,11 @@
 
 # Zotify
 
+This is a fork of Zotify's [dev branch](https://github.com/zotify-dev/zotify/tree/v1.0-dev) which hasn't seen any activity for months. This fork will be updated to include missing/unimplemented features and maintained by yours truly until the original developers decide to come home with the milk.
+
 A customizable music and podcast downloader. \
 Formerly ZSp‌otify.
 
-Available on [zotify.xyz](https://zotify.xyz/zotify/zotify) and [GitHub](https://github.com/zotify-dev/zotify). \
 Built on [Librespot](https://github.com/kokarare1212/librespot-python).
 
 ## Features
@@ -25,10 +26,10 @@ Built on [Librespot](https://github.com/kokarare1212/librespot-python).
 
 Requires Python 3.11 or greater. \
 Optionally requires FFmpeg to save tracks as anything other than Ogg Vorbis.
-(FFmpeg installation instructions available [here](https://github.com/KDalu/zotify/blob/main/INSTALLATION.md))
+(FFmpeg installation instructions available [here](https://github.com/DraftKinner/zotify/blob/main/INSTALLATION.md))
 
 Enter the following command in terminal to install Zotify. \
-`python -m pip install git+https://github.com/KDalu/zotify.git`
+`python -m pip install git+https://github.com/DraftKinner/zotify.git`
 
 ## General Usage
 
