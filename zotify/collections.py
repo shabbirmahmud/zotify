@@ -11,14 +11,13 @@ from zotify.utils import MetadataEntry, PlayableData, PlayableType, bytes_to_bas
 
 
 class Collection:
-    playables: list[PlayableData] = []
-
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
-        raise NotImplementedError
+        self.playables: list[PlayableData] = []
 
 
 class Album(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
+        super().__init__(b62_id, api, config)
         album = api.get_metadata_4_album(AlbumId.from_base62(b62_id))
         for disc in album.disc:
             for track in disc.track:
@@ -36,6 +35,7 @@ class Album(Collection):
 
 class Artist(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
+        super().__init__(b62_id, api, config)
         artist = api.get_metadata_4_artist(ArtistId.from_base62(b62_id))
         for album_group in (
             artist.album_group
@@ -60,6 +60,7 @@ class Artist(Collection):
 
 class Show(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
+        super().__init__(b62_id, api, config)
         show = api.get_metadata_4_show(ShowId.from_base62(b62_id))
         for episode in show.episode:
             metadata = [MetadataEntry("key", bytes_to_base62(episode.gid))]
@@ -76,6 +77,7 @@ class Show(Collection):
 
 class Playlist(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
+        super().__init__(b62_id, api, config)
         playlist = api.get_playlist(PlaylistId(b62_id))
         for i in range(len(playlist.contents.items)):
             item = playlist.contents.items[i]
@@ -122,6 +124,7 @@ class Playlist(Collection):
 
 class Track(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
+        super().__init__(b62_id, api, config)
         metadata = [MetadataEntry("key", b62_id)]
         self.playables.append(
             PlayableData(
@@ -136,6 +139,7 @@ class Track(Collection):
 
 class Episode(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
+        super().__init__(b62_id, api, config)
         metadata = [MetadataEntry("key", b62_id)]
         self.playables.append(
             PlayableData(
