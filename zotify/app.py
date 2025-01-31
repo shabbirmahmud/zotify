@@ -200,8 +200,8 @@ class App:
                 return selection.get("episodes")
             elif args.download:
                 ids = []
-                for x in args.download:
-                    ids.extend(selection.from_file(x))
+                for x in args.download.split(", "):
+                    ids.extend(selection.from_file(x.strip()))
                 return ids
             elif args.urls:
                 return args.urls
