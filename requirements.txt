@@ -1,5 +1,5 @@
 librespot@git+https://github.com/kokarare1212/librespot-python
-music-tag@git+https://zotify.xyz/zotify/music-tag
+music-tag
 mutagen
 Pillow
 pkce
