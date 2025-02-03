@@ -87,7 +87,8 @@ class Playable:
                     "{" + meta.name + "}", fix_filename(meta.string)
                 )
         file_path = library.joinpath(output).expanduser()
-        if file_path.with_suffix("." + ext).exists() and not replace:
+        file_path = Path(f'{file_path}.{ext}')
+        if file_path.exists() and not replace:
             raise FileExistsError("File already downloaded")
         else:
             file_path.parent.mkdir(parents=True, exist_ok=True)
