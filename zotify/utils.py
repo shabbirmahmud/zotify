@@ -3,6 +3,7 @@ from enum import Enum, IntEnum
 from pathlib import Path
 from re import IGNORECASE, sub
 from typing import Any, NamedTuple
+from dataclasses import dataclass, field
 
 from librespot.audio.decoders import AudioQuality
 from librespot.util import Base62
@@ -110,12 +111,14 @@ class PlayableType(Enum):
     EPISODE = "episode"
 
 
-class PlayableData(NamedTuple):
+@dataclass
+class PlayableData():
     type: PlayableType
     id: str
     library: Path
     output_template: str
-    metadata: list[MetadataEntry] = []
+    metadata: list[MetadataEntry] = field(default_factory=list)
+    existing: bool = False
 
 
 class OptionalOrFalse(Action):

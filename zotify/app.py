@@ -146,6 +146,7 @@ class Selection:
 class App:
     def __init__(self, args: Namespace):
         self.__config = Config(args)
+        self.__existing = {}
         Logger(self.__config)
 
         # Create session
@@ -180,6 +181,11 @@ class App:
                 Logger.log(LogChannel.ERRORS, str(e))
                 exit(1)
         if len(collections) > 0:
+            self.scan(
+                collections,
+                self.__config.skip_previous,
+                self.__config.skip_duplicates,
+            )
             self.download_all(collections)
         else:
             Logger.log(LogChannel.WARNINGS, "there is nothing to do")
@@ -240,12 +246,34 @@ class App:
                 raise ParseError(f'Unsupported content type "{id_type}"')
         return collections
 
+    def scan(
+        self,
+        collections: list[Collection],
+        skip_previous: bool,
+        skip_duplicate: bool,
+    ):
+        if skip_previous:
+            for collection in collections:
+                existing = collection.get_existing(
+                    self.__config.audio_format.value.ext
+                )
+                self.__existing.update(existing)
+        if skip_duplicate:
+            pass
+
     def download_all(self, collections: list[Collection]) -> None:
         count = 0
         total = sum(len(c.playables) for c in collections)
         for collection in collections:
             for playable in collection.playables:
                 count += 1
+
+                if playable.existing:
+                    Logger.log(
+                        LogChannel.SKIPS,
+                        f'Skipping "{self.__existing[playable.id]}": Previously downloaded',
+                    )
+                    continue
 
                 # Get track data
                 if playable.type == PlayableType.TRACK:
@@ -257,7 +285,7 @@ class App:
                         except RuntimeError as err:
                             Logger.log(
                                 LogChannel.SKIPS,
-                                f'Skipping song id = {playable.id}: {err}',
+                                f'Skipping track id = {playable.id}: {err}',
                             )
                             continue
                 elif playable.type == PlayableType.EPISODE:

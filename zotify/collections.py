@@ -1,3 +1,6 @@
+from pathlib import Path
+from glob import iglob
+
 from librespot.metadata import (
     AlbumId,
     ArtistId,
@@ -7,17 +10,55 @@ from librespot.metadata import (
 
 from zotify import ApiClient
 from zotify.config import Config
-from zotify.utils import MetadataEntry, PlayableData, PlayableType, bytes_to_base62
-
+from zotify.file import LocalFile
+from zotify.utils import (
+    MetadataEntry,
+    PlayableData,
+    PlayableType,
+    bytes_to_base62,
+    fix_filename,
+)
 
 class Collection:
-    def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
+    def __init__(self):
         self.playables: list[PlayableData] = []
+    
+    def get_existing(self, ext: str) -> dict[str, str]:
+        existing: dict[str, str] = {}
+
+        meta_tags = ["album_artist", "album", "podcast", "playlist"]
+        library = Path(self.playables[0].library)
+        output = self.playables[0].output_template
+        metadata = self.playables[0].metadata
+        id_type = self.playables[0].type
+        
+        for meta in metadata:
+            if meta.name in meta_tags:
+                output = output.replace(
+                    "{" + meta.name + "}", fix_filename(meta.string)
+                )
+        
+        collection_path = library.joinpath(output).expanduser()
+        if collection_path.parent.exists():
+            file_path = "*.{}".format(ext)
+            scan_path = str(collection_path.parent.joinpath(file_path))
+
+            # Check contents of path
+            for file in iglob(scan_path):
+                f_path = Path(file)
+                f = LocalFile(f_path)
+                existing[f.get_metadata("key")] = f_path.stem
+        
+            for playable in self.playables:
+                if playable.id in existing.keys():
+                    playable.existing = True
+        
+        return existing
 
 
 class Album(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
-        super().__init__(b62_id, api, config)
+        super().__init__()
         album = api.get_metadata_4_album(AlbumId.from_base62(b62_id))
         for disc in album.disc:
             for track in disc.track:
@@ -35,7 +76,7 @@ class Album(Collection):
 
 class Artist(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
-        super().__init__(b62_id, api, config)
+        super().__init__()
         artist = api.get_metadata_4_artist(ArtistId.from_base62(b62_id))
         for album_group in (
             artist.album_group
@@ -60,7 +101,7 @@ class Artist(Collection):
 
 class Show(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
-        super().__init__(b62_id, api, config)
+        super().__init__()
         show = api.get_metadata_4_show(ShowId.from_base62(b62_id))
         for episode in show.episode:
             metadata = [MetadataEntry("key", bytes_to_base62(episode.gid))]
@@ -77,7 +118,7 @@ class Show(Collection):
 
 class Playlist(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
-        super().__init__(b62_id, api, config)
+        super().__init__()
         playlist = api.get_playlist(PlaylistId(b62_id))
         for i in range(len(playlist.contents.items)):
             item = playlist.contents.items[i]
@@ -124,7 +165,7 @@ class Playlist(Collection):
 
 class Track(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
-        super().__init__(b62_id, api, config)
+        super().__init__()
         metadata = [MetadataEntry("key", b62_id)]
         self.playables.append(
             PlayableData(
@@ -139,7 +180,7 @@ class Track(Collection):
 
 class Episode(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
-        super().__init__(b62_id, api, config)
+        super().__init__()
         metadata = [MetadataEntry("key", b62_id)]
         self.playables.append(
             PlayableData(

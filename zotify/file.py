@@ -117,3 +117,13 @@ class LocalFile:
             f.save()
         except OggVorbisHeaderError:
             pass  # Thrown when using untranscoded file, nothing breaks.
+
+    def get_metadata(self, tag: str) -> str:
+        """
+        Gets metadata from file
+        Args:
+            tag: metadata tag to be retrieved
+        """
+        f = load_file(self.__path)
+
+        return f[tag].value
