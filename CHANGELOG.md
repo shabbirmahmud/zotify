@@ -1,5 +1,29 @@
 # STILL IN DEVELOPMENT, EVERYTHING HERE IS SUBJECT TO CHANGE
 
+## UNRELEASED
+
+### Changes
+
+- Changed music-tag package used to a mirror of the repository hosted at zotify.xyz, in case it goes down again.
+
+### Additions
+
+- Added `--download-real-time` feature back.
+- Added implementation for `--skip-previous` as it was included as a config parameter but was unimplemented.
+
+### Removals
+
+- None
+
+### Fixes
+
+- Fixed config.json being ignored.
+- Fixed redownloading songs that are already present in destination folder. They are no longer redownloaded.
+- Fixed `Unsupported content type "playlist"` error when local files are included in the playlist. Local files are skipped.
+- Fixed `RuntimeError: Cannot get alternative track` from terminating the program.
+- Fixed downloading multiple collections from downloading everything twice.
+- Fixed `-d` or `--download` option not detecting the file.
+
 ## v1.0.0
 
 ### BREAKING CHANGES AHEAD
@@ -83,6 +107,7 @@
 - Removed the following config options due to their corresponding features being removed:
   - `bulk_wait_time`
   - `chunk_size`
+  - `download_real_time`
   - `md_allgenres`
   - `md_genredelimiter`
   - `metadata_delimiter`
