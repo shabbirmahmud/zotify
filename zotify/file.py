@@ -125,5 +125,4 @@ class LocalFile:
             tag: metadata tag to be retrieved
         """
         f = load_file(self.__path)
-
         return f[tag].value

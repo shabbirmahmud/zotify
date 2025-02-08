@@ -19,10 +19,11 @@ from zotify.utils import (
     fix_filename,
 )
 
+
 class Collection:
     def __init__(self):
         self.playables: list[PlayableData] = []
-    
+
     def get_existing(self, ext: str) -> dict[str, str]:
         existing: dict[str, str] = {}
 
@@ -30,14 +31,13 @@ class Collection:
         library = Path(self.playables[0].library)
         output = self.playables[0].output_template
         metadata = self.playables[0].metadata
-        id_type = self.playables[0].type
-        
+
         for meta in metadata:
             if meta.name in meta_tags:
                 output = output.replace(
                     "{" + meta.name + "}", fix_filename(meta.string)
                 )
-        
+
         collection_path = library.joinpath(output).expanduser()
         if collection_path.parent.exists():
             file_path = "*.{}".format(ext)
@@ -48,11 +48,11 @@ class Collection:
                 f_path = Path(file)
                 f = LocalFile(f_path)
                 existing[f.get_metadata("key")] = f_path.stem
-        
+
             for playable in self.playables:
                 if playable.id in existing.keys():
                     playable.existing = True
-        
+
         return existing
 
 
