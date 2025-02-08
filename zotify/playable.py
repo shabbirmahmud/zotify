@@ -87,7 +87,7 @@ class Playable:
                     "{" + meta.name + "}", fix_filename(meta.string)
                 )
         file_path = library.joinpath(output).expanduser()
-        file_path = Path(f'{file_path}.{ext}')
+        file_path = Path(f"{file_path}.{ext}")
         if file_path.exists() and not replace:
             f = LocalFile(file_path)
             f.write_metadata(self.metadata)
@@ -231,7 +231,9 @@ class Track(PlayableContentFeeder.LoadedStream, Playable):
                 p_bar.update(f.write(chunk))
                 downloaded += len(chunk)
                 delta_current = time() - time_start
-                delta_required = (downloaded / self.input_stream.size) * (self.duration/1000)
+                delta_required = (downloaded / self.input_stream.size) * (
+                    self.duration / 1000
+                )
                 if delta_required > delta_current:
                     sleep(delta_required - delta_current)
         return LocalFile(Path(file), AudioFormat.VORBIS)
