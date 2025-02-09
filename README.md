@@ -5,8 +5,6 @@
 This is a fork of Zotify's [dev branch](https://github.com/zotify-dev/zotify/tree/v1.0-dev) which hasn't seen any activity for months. This fork will be updated to include missing/unimplemented features and maintained by yours truly until the original developers decide to come home with the milk.
 
 A customizable music and podcast downloader. \
-Formerly ZSp‌otify.
-
 Built on [Librespot](https://github.com/kokarare1212/librespot-python).
 
 ## Features
@@ -52,8 +50,8 @@ Downloads specified items. Accepts any combination of track, album, playlist, ep
 
 | Config key              | Command line argument     | Description                                         | Default                                                    |
 | ----------------------- | ------------------------- | --------------------------------------------------- | ---------------------------------------------------------- |
-| path_credentials        | --path-credentials        | Path to credentials file                            |                                                            |
-| path_archive            | --path-archive            | Path to track archive file                          |                                                            |
+| path_credentials        | --credentials             | Path to credentials file                            |                                                            |
+| path_archive            | --archive                 | Path to track archive file                          |                                                            |
 | music_library           | --music-library           | Path to root of music library                       |                                                            |
 | podcast_library         | --podcast-library         | Path to root of podcast library                     |                                                            |
 | mixed_playlist_library  | --mixed-playlist-library  | Path to root of mixed content playlist library      |                                                            |
@@ -69,6 +67,8 @@ Downloads specified items. Accepts any combination of track, album, playlist, ep
 | ffmpeg_args             | --ffmpeg-args             | Additional ffmpeg arguments when transcoding        |                                                            |
 | save_credentials        | --save-credentials        | Save login credentials to a file                    |                                                            |
 | replace_existing        | --replace-existing        | Redownload and replace songs if they already exist  |                                                            |
+| skip_previous           | --skip-previous           | Skip previously downloaded songs in the playlist    |                                                            |
+| skip_duplicates         | --skip-duplicates         | Skip downloading existing track to different album  |                                                            |
 
 </details>
 
