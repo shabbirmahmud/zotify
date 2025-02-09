@@ -112,13 +112,14 @@ class PlayableType(Enum):
 
 
 @dataclass
-class PlayableData():
+class PlayableData:
     type: PlayableType
     id: str
     library: Path
     output_template: str
     metadata: list[MetadataEntry] = field(default_factory=list)
     existing: bool = False
+    duplicate: bool = False
 
 
 class OptionalOrFalse(Action):

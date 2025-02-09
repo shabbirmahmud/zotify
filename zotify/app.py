@@ -147,6 +147,7 @@ class App:
     def __init__(self, args: Namespace):
         self.__config = Config(args)
         self.__existing = {}
+        self.__duplicates = {}
         Logger(self.__config)
 
         # Create session
@@ -181,11 +182,8 @@ class App:
                 Logger.log(LogChannel.ERRORS, str(e))
                 exit(1)
         if len(collections) > 0:
-            self.scan(
-                collections,
-                self.__config.skip_previous,
-                self.__config.skip_duplicates,
-            )
+            with Loader("Scanning collections..."):
+                self.scan(collections)
             self.download_all(collections)
         else:
             Logger.log(LogChannel.WARNINGS, "there is nothing to do")
@@ -246,20 +244,20 @@ class App:
                 raise ParseError(f'Unsupported content type "{id_type}"')
         return collections
 
-    def scan(
-        self,
-        collections: list[Collection],
-        skip_previous: bool,
-        skip_duplicate: bool,
-    ):
-        if skip_previous:
+    def scan(self, collections: list[Collection]):
+        if self.__config.skip_previous:
             for collection in collections:
-                existing = collection.get_existing(
-                    self.__config.audio_format.value.ext
-                )
+                existing = collection.get_existing(self.__config.audio_format.value.ext)
                 self.__existing.update(existing)
-        if skip_duplicate:
-            pass
+        if self.__config.skip_duplicates:
+            for collection in collections:
+                duplicates = collection.get_duplicates(
+                    self.__config.audio_format.value.ext,
+                    self.__config.album_library,
+                    self.__config.playlist_library,
+                    self.__config.podcast_library,
+                )
+                self.__duplicates.update(duplicates)
 
     def download_all(self, collections: list[Collection]) -> None:
         count = 0
@@ -268,6 +266,13 @@ class App:
             for playable in collection.playables:
                 count += 1
 
+                # Skip duplicates and previously downloaded
+                if playable.duplicate:
+                    Logger.log(
+                        LogChannel.SKIPS,
+                        f'Skipping "{self.__duplicates[playable.id]}": Duplicated from another collection',
+                    )
+                    continue
                 if playable.existing:
                     Logger.log(
                         LogChannel.SKIPS,
@@ -285,7 +290,7 @@ class App:
                         except RuntimeError as err:
                             Logger.log(
                                 LogChannel.SKIPS,
-                                f'Skipping track id = {playable.id}: {err}',
+                                f"Skipping track id = {playable.id}: {err}",
                             )
                             continue
                 elif playable.type == PlayableType.EPISODE:
@@ -319,7 +324,9 @@ class App:
                     desc=f"({count}/{total}) {track.name}",
                     total=track.input_stream.size,
                 ) as p_bar:
-                    file = track.write_audio_stream(output, p_bar, self.__config.download_real_time)
+                    file = track.write_audio_stream(
+                        output, p_bar, self.__config.download_real_time
+                    )
 
                 # Download lyrics
                 if playable.type == PlayableType.TRACK and self.__config.lyrics_file:

@@ -23,10 +23,9 @@ from zotify.utils import (
 class Collection:
     def __init__(self):
         self.playables: list[PlayableData] = []
+        self.path: Path = None
 
-    def get_existing(self, ext: str) -> dict[str, str]:
-        existing: dict[str, str] = {}
-
+    def set_path(self):
         meta_tags = ["album_artist", "album", "podcast", "playlist"]
         library = Path(self.playables[0].library)
         output = self.playables[0].output_template
@@ -38,10 +37,16 @@ class Collection:
                     "{" + meta.name + "}", fix_filename(meta.string)
                 )
 
-        collection_path = library.joinpath(output).expanduser()
-        if collection_path.parent.exists():
+        self.path = library.joinpath(output).expanduser().parent
+
+    def get_existing(self, ext: str) -> dict[str, str]:
+        existing: dict[str, str] = {}
+
+        if self.path is None:
+            self.set_path()
+        if self.path.exists():
             file_path = "*.{}".format(ext)
-            scan_path = str(collection_path.parent.joinpath(file_path))
+            scan_path = str(self.path.joinpath(file_path))
 
             # Check contents of path
             for file in iglob(scan_path):
@@ -54,6 +59,44 @@ class Collection:
                     playable.existing = True
 
         return existing
+
+    def get_duplicates(
+        self, ext: str, album_lib: Path, playlist_lib: Path, podcast_lib: Path
+    ) -> dict[str, str]:
+        existing: dict[str, str] = {}
+        duplicates: dict[str, str] = {}
+        scan_paths = []
+
+        if self.path is None:
+            self.set_path()
+        if self.path.exists():
+            file_path = "*.{}".format(ext)
+            collection_path = str(self.path.joinpath(file_path))
+
+        file_path = "**/*.{}".format(ext)
+        # Scan album library path
+        scan_paths.append(str(album_lib.joinpath(file_path)))
+        # Scan playlist library path
+        scan_paths.append(str(playlist_lib.joinpath(file_path)))
+        # Scan podcast library path
+        scan_paths.append(str(podcast_lib.joinpath(file_path)))
+
+        for scan_path in scan_paths:
+            for file in iglob(scan_path, recursive=True):
+                f_path = Path(file)
+                if self.path.exists() and f_path.match(collection_path):
+                    continue
+                f = LocalFile(f_path)
+                existing[f.get_metadata("key")] = f_path.stem
+
+            for playable in self.playables:
+                if playable.id in existing.keys():
+                    playable.duplicate = True
+                    duplicates[playable.id] = existing[playable.id]
+
+            existing = {}
+
+        return duplicates
 
 
 class Album(Collection):
