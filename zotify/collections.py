@@ -52,7 +52,7 @@ class Collection:
             for file in iglob(scan_path):
                 f_path = Path(file)
                 f = LocalFile(f_path)
-                existing[f.get_metadata("key")] = f_path.stem
+                existing[f.get_metadata("musicbrainztrackid")] = f_path.stem
 
             for playable in self.playables:
                 if playable.id in existing.keys():
@@ -87,7 +87,7 @@ class Collection:
                 if self.path.exists() and f_path.match(collection_path):
                     continue
                 f = LocalFile(f_path)
-                existing[f.get_metadata("key")] = f_path.stem
+                existing[f.get_metadata("musicbrainztrackid")] = f_path.stem
 
             for playable in self.playables:
                 if playable.id in existing.keys():
@@ -105,7 +105,9 @@ class Album(Collection):
         album = api.get_metadata_4_album(AlbumId.from_base62(b62_id))
         for disc in album.disc:
             for track in disc.track:
-                metadata = [MetadataEntry("key", bytes_to_base62(track.gid))]
+                metadata = [
+                    MetadataEntry("musicbrainztrackid", bytes_to_base62(track.gid))
+                ]
                 self.playables.append(
                     PlayableData(
                         PlayableType.TRACK,
@@ -130,7 +132,9 @@ class Artist(Collection):
             album = api.get_metadata_4_album(AlbumId.from_hex(album_group.album[0].gid))
             for disc in album.disc:
                 for track in disc.track:
-                    metadata = [MetadataEntry("key", bytes_to_base62(track.gid))]
+                    metadata = [
+                        MetadataEntry("musicbrainztrackid", bytes_to_base62(track.gid))
+                    ]
                     self.playables.append(
                         PlayableData(
                             PlayableType.TRACK,
@@ -147,7 +151,9 @@ class Show(Collection):
         super().__init__()
         show = api.get_metadata_4_show(ShowId.from_base62(b62_id))
         for episode in show.episode:
-            metadata = [MetadataEntry("key", bytes_to_base62(episode.gid))]
+            metadata = [
+                MetadataEntry("musicbrainztrackid", bytes_to_base62(episode.gid))
+            ]
             self.playables.append(
                 PlayableData(
                     PlayableType.EPISODE,
@@ -169,7 +175,7 @@ class Playlist(Collection):
             playable_type = split[1]
             playable_id = split[2]
             metadata = [
-                MetadataEntry("key", playable_id),
+                MetadataEntry("musicbrainztrackid", playable_id),
                 MetadataEntry("playlist", playlist.attributes.name),
                 MetadataEntry("playlist_length", playlist.length),
                 MetadataEntry("playlist_owner", playlist.owner_username),
@@ -209,7 +215,7 @@ class Playlist(Collection):
 class Track(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
         super().__init__()
-        metadata = [MetadataEntry("key", b62_id)]
+        metadata = [MetadataEntry("musicbrainztrackid", b62_id)]
         self.playables.append(
             PlayableData(
                 PlayableType.TRACK,
@@ -224,7 +230,7 @@ class Track(Collection):
 class Episode(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
         super().__init__()
-        metadata = [MetadataEntry("key", b62_id)]
+        metadata = [MetadataEntry("musicbrainztrackid", b62_id)]
         self.playables.append(
             PlayableData(
                 PlayableType.EPISODE,
