@@ -1,8 +1,9 @@
 from argparse import Namespace
 from pathlib import Path
 from typing import Any
+from time import sleep
 
-from zotify import OAuth, Session
+from zotify import OAuth, Session, RATE_LIMIT_INTERVAL_SECS
 from zotify.collections import Album, Artist, Collection, Episode, Playlist, Show, Track
 from zotify.config import Config
 from zotify.file import TranscodingError
@@ -262,6 +263,7 @@ class App:
     def download_all(self, collections: list[Collection]) -> None:
         count = 0
         total = sum(len(c.playables) for c in collections)
+        rate_limit_hits = 0
         for collection in collections:
             for playable in collection.playables:
                 count += 1
@@ -282,17 +284,21 @@ class App:
 
                 # Get track data
                 if playable.type == PlayableType.TRACK:
-                    with Loader("Fetching track..."):
-                        try:
+                    try:
+                        with Loader("Fetching track..."):
                             track = self.__session.get_track(
                                 playable.id, self.__config.download_quality
                             )
-                        except RuntimeError as err:
-                            Logger.log(
-                                LogChannel.SKIPS,
-                                f"Skipping track id = {playable.id}: {err}",
-                            )
-                            continue
+                    except RuntimeError as err:
+                        Logger.log(LogChannel.SKIPS, f"Skipping track #{count}: {err}")
+                        if "audio key" in str(err).lower():
+                            rate_limit_hits += 1
+                            sleep_time = RATE_LIMIT_INTERVAL_SECS * rate_limit_hits
+                            with Loader(
+                                f"Rate limit hit! Sleeping for {sleep_time}s..."
+                            ):
+                                sleep(sleep_time)
+                        continue
                 elif playable.type == PlayableType.EPISODE:
                     with Loader("Fetching episode..."):
                         track = self.__session.get_episode(playable.id)
@@ -341,7 +347,9 @@ class App:
                                 track.lyrics().save(output)
                             except FileNotFoundError as e:
                                 Logger.log(LogChannel.SKIPS, str(e))
-                Logger.log(LogChannel.DOWNLOADS, f"\nDownloaded {track.name}")
+                Logger.log(
+                    LogChannel.DOWNLOADS, f"\nDownloaded {track.name} ({count}/{total})"
+                )
 
                 # Transcode audio
                 if (
@@ -367,3 +375,6 @@ class App:
                         file.write_cover_art(
                             track.get_cover_art(self.__config.artwork_size)
                         )
+
+                # Reset rate limit counter for every successful download
+                rate_limit_hits = 0

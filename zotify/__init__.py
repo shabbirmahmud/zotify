@@ -37,8 +37,6 @@ API_URL = "https://api.sp" + "otify.com/v1/"
 AUTH_URL = "https://accounts.sp" + "otify.com/"
 REDIRECT_URI = "http://127.0.0.1:4381/login"
 CLIENT_ID = "65b70807" + "3fc0480e" + "a92a0772" + "33ca87bd"
-RATE_LIMIT_INTERVAL_SECS = 30
-RATE_LIMIT_CALLS_PER_INTERVAL = 9
 SCOPES = [
     "app-remote-control",
     "playlist-modify",
@@ -67,6 +65,9 @@ SCOPES = [
     "user-read-recently-played",
     "user-top-read",
 ]
+
+RATE_LIMIT_INTERVAL_SECS = 30
+RATE_LIMIT_CALLS_PER_INTERVAL = 9
 
 
 class Session(LibrespotSession):
