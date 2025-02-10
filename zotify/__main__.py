@@ -15,7 +15,9 @@ def main():
         prog="zotify",
         description="A fast and customizable music and podcast downloader",
     )
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group(required=True)
+
+    group.add_argument(
         "-v",
         "--version",
         action="store_true",
@@ -52,7 +54,6 @@ def main():
     )
     parser.add_argument("--username", type=str, default="", help="Account username")
     parser.add_argument("--token", type=str, default="", help="Account token")
-    group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
         "urls",
         type=str,
