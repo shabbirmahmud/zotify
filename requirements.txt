@@ -5,3 +5,4 @@ Pillow
 pkce
 requests
 tqdm
+ratelimit

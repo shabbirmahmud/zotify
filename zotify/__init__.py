@@ -7,6 +7,7 @@ from threading import Thread
 from typing import Any
 from time import time_ns
 from urllib.parse import urlencode, urlparse, parse_qs
+from ratelimit import limits, sleep_and_retry
 
 from librespot.audio import AudioKeyManager, CdnManager
 from librespot.audio.decoders import VorbisOnlyAudioQuality
@@ -36,6 +37,8 @@ API_URL = "https://api.sp" + "otify.com/v1/"
 AUTH_URL = "https://accounts.sp" + "otify.com/"
 REDIRECT_URI = "http://127.0.0.1:4381/login"
 CLIENT_ID = "65b70807" + "3fc0480e" + "a92a0772" + "33ca87bd"
+RATE_LIMIT_INTERVAL_SECS = 30
+RATE_LIMIT_CALLS_PER_INTERVAL = 9
 SCOPES = [
     "app-remote-control",
     "playlist-modify",
@@ -220,6 +223,11 @@ class Session(LibrespotSession):
             self.__auth_lock_bool = False
             self.__auth_lock.notify_all()
         self.mercury().interested_in("sp" + "otify:user:attributes:update", self)
+
+    @sleep_and_retry
+    @limits(calls=RATE_LIMIT_CALLS_PER_INTERVAL, period=RATE_LIMIT_INTERVAL_SECS)
+    def api(self) -> ApiClient:
+        return super().api()
 
 
 class ApiClient(LibrespotApiClient):
