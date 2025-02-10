@@ -10,7 +10,7 @@
 
 - Added `--download-real-time` feature back.
 - Added implementation for `--skip-previous` as it was included as a config parameter but was unimplemented.
-- Added implementation for `--skip-duplicates` as it was included as a config parameter but was unimplemented. Note that tracks must have the key metadata for this to work. Tracks downloaded using version 0.9.8 will automatically have this. TBA: Procedure to add key metadata for tracks without it
+- Added implementation for `--skip-duplicates` as it was included as a config parameter but was unimplemented. Note that tracks must have the trackid metadata for this to work. TBA: Procedure to add trackid metadata for tracks without it
 
 ### Removals
 
