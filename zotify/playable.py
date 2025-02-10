@@ -87,9 +87,9 @@ class Playable:
                     "{" + meta.name + "}", fix_filename(meta.string)
                 )
         file_path = library.joinpath(output).expanduser()
-        file_path = Path(f"{file_path}.{ext}")
-        if file_path.exists() and not replace:
-            f = LocalFile(file_path)
+        check_path = Path(f"{file_path}.{ext}")
+        if check_path.exists() and not replace:
+            f = LocalFile(check_path)
             f.write_metadata(self.metadata)
             raise FileExistsError("File already downloaded")
         else:
