@@ -24,6 +24,7 @@
 - Fixed `RuntimeError: Cannot get alternative track` from terminating the program.
 - Fixed downloading multiple collections from downloading everything twice.
 - Fixed `-d` or `--download` option not detecting the file.
+- Fixed `Failed fetching audio key!` error from continuously hitting API rate limits. Implemented a flat rate limiter on calls to API. When usage traffic is high and rate limits are hit on the server end, the current track is skipped and the program will continue at a reduced internal rate limit.
 
 ## v1.0.0
 
