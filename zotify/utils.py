@@ -122,6 +122,11 @@ class PlayableData:
     duplicate: bool = False
 
 
+class RateLimitMode(Enum):
+    NORMAL = "normal"
+    REDUCED = "reduced"
+
+
 class OptionalOrFalse(Action):
     def __init__(
         self,

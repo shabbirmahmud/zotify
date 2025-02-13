@@ -5,9 +5,9 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from threading import Thread
 from typing import Any
-from time import time_ns
+from time import time_ns, sleep
 from urllib.parse import urlencode, urlparse, parse_qs
-from ratelimit import limits, sleep_and_retry
+from limits import storage, strategies, RateLimitItemPerSecond
 
 from librespot.audio import AudioKeyManager, CdnManager
 from librespot.audio.decoders import VorbisOnlyAudioQuality
@@ -31,7 +31,7 @@ from requests import HTTPError, get, post
 
 from zotify.loader import Loader
 from zotify.playable import Episode, Track
-from zotify.utils import Quality
+from zotify.utils import Quality, RateLimitMode
 
 API_URL = "https://api.sp" + "otify.com/v1/"
 AUTH_URL = "https://accounts.sp" + "otify.com/"
@@ -66,8 +66,12 @@ SCOPES = [
     "user-top-read",
 ]
 
+RATE_LIMIT_API = "rate_limit_api"
+RATE_LIMIT_MAX_CONSECUTIVE_HITS = 10
+RATE_LIMIT_RESTORE_CONDITION = 15
 RATE_LIMIT_INTERVAL_SECS = 30
-RATE_LIMIT_CALLS_PER_INTERVAL = 9
+RATE_LIMIT_CALLS_NORMAL = 9
+RATE_LIMIT_CALLS_REDUCED = 3
 
 
 class Session(LibrespotSession):
@@ -98,6 +102,7 @@ class Session(LibrespotSession):
             self.__language = language
             self.connect()
             self.authenticate(session_builder.login_credentials)
+        self.rate_limiter = RateLimiter()
 
     @staticmethod
     def from_file(cred_file: Path | str, language: str = "en") -> Session:
@@ -225,9 +230,12 @@ class Session(LibrespotSession):
             self.__auth_lock.notify_all()
         self.mercury().interested_in("sp" + "otify:user:attributes:update", self)
 
-    @sleep_and_retry
-    @limits(calls=RATE_LIMIT_CALLS_PER_INTERVAL, period=RATE_LIMIT_INTERVAL_SECS)
     def api(self) -> ApiClient:
+        # Check rate limiter before making calls to api
+        while not self.rate_limiter.check():
+            sleep(1)
+
+        self.rate_limiter.hit()
         return super().api()
 
 
@@ -433,3 +441,30 @@ class OAuth:
                 self.end_headers()
                 self.wfile.write(b"Authorization code not found.")
                 Thread(target=self.server.shutdown).start()
+
+
+class RateLimiter:
+    rate_limits = {
+        RateLimitMode.NORMAL: RateLimitItemPerSecond(
+            RATE_LIMIT_CALLS_NORMAL, RATE_LIMIT_INTERVAL_SECS
+        ),
+        RateLimitMode.REDUCED: RateLimitItemPerSecond(
+            RATE_LIMIT_CALLS_REDUCED, RATE_LIMIT_INTERVAL_SECS
+        ),
+    }
+
+    def __init__(self):
+        self.storage = storage.MemoryStorage()
+        self.moving_window = strategies.MovingWindowRateLimiter(self.storage)
+        self.mode = RateLimitMode.NORMAL
+        self.rate_limit = RateLimiter.rate_limits[self.mode]
+
+    def check(self):
+        return self.moving_window.test(self.rate_limit, RATE_LIMIT_API)
+
+    def hit(self):
+        self.moving_window.hit(self.rate_limit, RATE_LIMIT_API)
+
+    def set_mode(self, mode: RateLimitMode):
+        self.mode = mode
+        self.rate_limit = RateLimiter.rate_limits[self.mode]

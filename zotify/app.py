@@ -3,13 +3,19 @@ from pathlib import Path
 from typing import Any
 from time import sleep
 
-from zotify import OAuth, Session, RATE_LIMIT_INTERVAL_SECS
+from zotify import (
+    OAuth,
+    Session,
+    RATE_LIMIT_INTERVAL_SECS,
+    RATE_LIMIT_MAX_CONSECUTIVE_HITS,
+    RATE_LIMIT_RESTORE_CONDITION,
+)
 from zotify.collections import Album, Artist, Collection, Episode, Playlist, Show, Track
 from zotify.config import Config
 from zotify.file import TranscodingError
 from zotify.loader import Loader
 from zotify.logger import LogChannel, Logger
-from zotify.utils import AudioFormat, PlayableType
+from zotify.utils import AudioFormat, PlayableType, RateLimitMode
 
 
 class ParseError(ValueError): ...
@@ -261,9 +267,11 @@ class App:
                 self.__duplicates.update(duplicates)
 
     def download_all(self, collections: list[Collection]) -> None:
+        self.rate_limit_hits = 0
+        self.last_rate_limit_hit = 0
+
         count = 0
         total = sum(len(c.playables) for c in collections)
-        rate_limit_hits = 0
         for collection in collections:
             for playable in collection.playables:
                 count += 1
@@ -285,23 +293,22 @@ class App:
                 # Get track data
                 if playable.type == PlayableType.TRACK:
                     try:
+                        self.restore_rate_limit(count)
                         with Loader("Fetching track..."):
                             track = self.__session.get_track(
                                 playable.id, self.__config.download_quality
                             )
                     except RuntimeError as err:
-                        Logger.log(LogChannel.SKIPS, f"Skipping track #{count}: {err}")
-                        if "audio key" in str(err).lower():
-                            rate_limit_hits += 1
-                            sleep_time = RATE_LIMIT_INTERVAL_SECS * rate_limit_hits
-                            with Loader(
-                                f"Rate limit hit! Sleeping for {sleep_time}s..."
-                            ):
-                                sleep(sleep_time)
+                        self.handle_runtime_error(err, playable.type, count)
                         continue
                 elif playable.type == PlayableType.EPISODE:
-                    with Loader("Fetching episode..."):
-                        track = self.__session.get_episode(playable.id)
+                    try:
+                        self.restore_rate_limit(count)
+                        with Loader("Fetching episode..."):
+                            track = self.__session.get_episode(playable.id)
+                    except RuntimeError as err:
+                        self.handle_runtime_error(err, playable.type, count)
+                        continue
                 else:
                     Logger.log(
                         LogChannel.SKIPS,
@@ -377,4 +384,39 @@ class App:
                         )
 
                 # Reset rate limit counter for every successful download
-                rate_limit_hits = 0
+                self.rate_limit_hits = 0
+
+    def restore_rate_limit(self, count: int) -> None:
+        if (
+            self.__session.rate_limiter.mode == RateLimitMode.REDUCED
+            and (count - self.last_rate_limit_hit) > RATE_LIMIT_RESTORE_CONDITION
+        ):
+            with Loader("Restoring rate limit to normal..."):
+                self.__session.rate_limiter.set_mode(RateLimitMode.NORMAL)
+                sleep(RATE_LIMIT_INTERVAL_SECS)
+
+    def handle_runtime_error(
+        self, err: str, playable_type: PlayableType, count: int
+    ) -> None:
+        Logger.log(LogChannel.SKIPS, f"Skipping {playable_type.value} #{count}: {err}")
+        if "audio key" in str(err).lower():
+            self.handle_rate_limit_hit(count)
+
+    def handle_rate_limit_hit(self, count: int) -> None:
+        self.rate_limit_hits += 1
+        self.last_rate_limit_hit = count
+
+        # Exit program if rate limit hit cutoff is reached
+        if self.rate_limit_hits > RATE_LIMIT_MAX_CONSECUTIVE_HITS:
+            Logger.log(LogChannel.ERRORS, "Server too busy or down. Try again later")
+            exit(1)
+
+        # Reduce internal rate limiter
+        if self.__session.rate_limiter.mode == RateLimitMode.NORMAL:
+            self.__session.rate_limiter.set_mode(RateLimitMode.REDUCED)
+
+        # Sleep for one interval
+        with Loader(
+            f"Server rate limit hit! Sleeping for {RATE_LIMIT_INTERVAL_SECS}s..."
+        ):
+            sleep(RATE_LIMIT_INTERVAL_SECS)
