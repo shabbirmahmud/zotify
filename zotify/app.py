@@ -254,17 +254,29 @@ class App:
     def scan(self, collections: list[Collection]):
         if self.__config.skip_previous:
             for collection in collections:
-                existing = collection.get_existing(self.__config.audio_format.value.ext)
-                self.__existing.update(existing)
+                try:
+                    existing = collection.get_existing(
+                        self.__config.audio_format.value.ext
+                    )
+                    self.__existing.update(existing)
+                except IndexError as err:
+                    Logger.log(
+                        LogChannel.WARNINGS, f"{err} Cannot scan for existing tracks"
+                    )
         if self.__config.skip_duplicates:
             for collection in collections:
-                duplicates = collection.get_duplicates(
-                    self.__config.audio_format.value.ext,
-                    self.__config.album_library,
-                    self.__config.playlist_library,
-                    self.__config.podcast_library,
-                )
-                self.__duplicates.update(duplicates)
+                try:
+                    duplicates = collection.get_duplicates(
+                        self.__config.audio_format.value.ext,
+                        self.__config.album_library,
+                        self.__config.playlist_library,
+                        self.__config.podcast_library,
+                    )
+                    self.__duplicates.update(duplicates)
+                except IndexError as err:
+                    Logger.log(
+                        LogChannel.WARNINGS, f"{err} Cannot scan for duplicate tracks"
+                    )
 
     def download_all(self, collections: list[Collection]) -> None:
         self.rate_limit_hits = 0
