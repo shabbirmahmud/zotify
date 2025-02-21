@@ -125,11 +125,13 @@ class Artist(Collection):
         artist = api.get_metadata_4_artist(ArtistId.from_base62(b62_id))
         for album_group in (
             artist.album_group
-            and artist.single_group
-            and artist.compilation_group
-            and artist.appears_on_group
+            or artist.single_group
+            or artist.compilation_group
+            or artist.appears_on_group
         ):
-            album = api.get_metadata_4_album(AlbumId.from_hex(album_group.album[0].gid))
+            album = api.get_metadata_4_album(
+                AlbumId.from_base62(bytes_to_base62(album_group.album[0].gid))
+            )
             for disc in album.disc:
                 for track in disc.track:
                     metadata = [
