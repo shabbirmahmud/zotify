@@ -71,6 +71,7 @@ def main():
         "-d",
         "--download",
         type=str,
+        nargs="*",
         help="Downloads tracks, playlists and albums from the URLs written in the file passed.",
     )
     group.add_argument(
