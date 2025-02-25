@@ -8,7 +8,7 @@ from librespot.metadata import (
     ShowId,
 )
 
-from zotify import ApiClient
+from zotify import ApiClient, API_MAX_REQUEST_LIMIT
 from zotify.config import Config
 from zotify.file import LocalFile
 from zotify.utils import (
@@ -21,11 +21,16 @@ from zotify.utils import (
 
 
 class Collection:
-    def __init__(self):
+    def __init__(self, api: ApiClient):
         self.playables: list[PlayableData] = []
         self.path: Path = None
+        self.api = api
+        self.offset = 0
 
     def set_path(self):
+        if len(self.playables) == 0:
+            raise IndexError("Collection is empty!")
+
         meta_tags = ["album_artist", "album", "podcast", "playlist"]
         library = Path(self.playables[0].library)
         output = self.playables[0].output_template
@@ -52,7 +57,7 @@ class Collection:
             for file in iglob(scan_path):
                 f_path = Path(file)
                 f = LocalFile(f_path)
-                existing[f.get_metadata("musicbrainztrackid")] = f_path.stem
+                existing[f.get_metadata("spotid")] = f_path.stem
 
             for playable in self.playables:
                 if playable.id in existing.keys():
@@ -87,7 +92,7 @@ class Collection:
                 if self.path.exists() and f_path.match(collection_path):
                     continue
                 f = LocalFile(f_path)
-                existing[f.get_metadata("musicbrainztrackid")] = f_path.stem
+                existing[f.get_metadata("spotid")] = f_path.stem
 
             for playable in self.playables:
                 if playable.id in existing.keys():
@@ -98,16 +103,88 @@ class Collection:
 
         return duplicates
 
+    def get_metadata(self):
+        params = {}
+        ids = ""
+        offset_start = self.offset
+
+        for playable in self.playables[self.offset :]:
+            if (
+                self.offset == offset_start
+                or (self.offset % API_MAX_REQUEST_LIMIT) != 0
+            ):
+                ids = f"{ids},{playable.id}"
+                self.offset += 1
+            else:
+                break
+
+        metadata = []
+        params = {"ids": ids.strip(",")}
+        if isinstance(self, (Album, Artist, Playlist, Track)):
+            r = self.api.invoke_url(
+                "tracks", params, limit=API_MAX_REQUEST_LIMIT, offset=offset_start
+            )
+
+            for track in r["tracks"]:
+                # Get title, artist, and id
+                track_metadata = [
+                    MetadataEntry("spotid", track["id"]),
+                    MetadataEntry("title", track["name"]),
+                    MetadataEntry("artists", [a["name"] for a in track["artists"]]),
+                ]
+                metadata.append(track_metadata)
+        else:
+            r = self.api.invoke_url(
+                "episodes", params, limit=API_MAX_REQUEST_LIMIT, offset=offset_start
+            )
+
+            for episode in r["episodes"]:
+                # Get title and id
+                episode_metadata = [
+                    MetadataEntry("spotid", episode["id"]),
+                    MetadataEntry("title", episode["name"]),
+                ]
+                metadata.append(episode_metadata)
+
+        return metadata
+
+    def get_match(self):
+        count = 0
+
+        # Output format of existing tracks must match
+        # with the current download command
+        if self.path is None:
+            self.set_path()
+        if self.path.exists():
+            for playable in self.playables:
+                if count == self.offset:
+                    # Get new batch of metadata
+                    metadata = self.get_metadata()
+
+                # Create file path, include all extensions
+                filename = Path(self.playables[0].output_template).name
+                filename = filename.replace("{episode_number}", "*")
+                filename = filename.replace("{track_number}", "*")
+                for meta in metadata[count % API_MAX_REQUEST_LIMIT]:
+                    filename = filename.replace(
+                        "{" + meta.name + "}", fix_filename(meta.string)
+                    )
+                scan_path = f"{self.path.joinpath(filename)}.*"
+
+                for file in iglob(scan_path):
+                    f = LocalFile(Path(file))
+                    f.write_metadata(metadata[count % API_MAX_REQUEST_LIMIT])
+
+                count += 1
+
 
 class Album(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
-        super().__init__()
+        super().__init__(api)
         album = api.get_metadata_4_album(AlbumId.from_base62(b62_id))
         for disc in album.disc:
             for track in disc.track:
-                metadata = [
-                    MetadataEntry("musicbrainztrackid", bytes_to_base62(track.gid))
-                ]
+                metadata = [MetadataEntry("spotid", bytes_to_base62(track.gid))]
                 self.playables.append(
                     PlayableData(
                         PlayableType.TRACK,
@@ -121,7 +198,7 @@ class Album(Collection):
 
 class Artist(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
-        super().__init__()
+        super().__init__(api)
         artist = api.get_metadata_4_artist(ArtistId.from_base62(b62_id))
         for album_group in (
             artist.album_group
@@ -134,9 +211,7 @@ class Artist(Collection):
             )
             for disc in album.disc:
                 for track in disc.track:
-                    metadata = [
-                        MetadataEntry("musicbrainztrackid", bytes_to_base62(track.gid))
-                    ]
+                    metadata = [MetadataEntry("spotid", bytes_to_base62(track.gid))]
                     self.playables.append(
                         PlayableData(
                             PlayableType.TRACK,
@@ -150,12 +225,10 @@ class Artist(Collection):
 
 class Show(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
-        super().__init__()
+        super().__init__(api)
         show = api.get_metadata_4_show(ShowId.from_base62(b62_id))
         for episode in show.episode:
-            metadata = [
-                MetadataEntry("musicbrainztrackid", bytes_to_base62(episode.gid))
-            ]
+            metadata = [MetadataEntry("spotid", bytes_to_base62(episode.gid))]
             self.playables.append(
                 PlayableData(
                     PlayableType.EPISODE,
@@ -169,7 +242,7 @@ class Show(Collection):
 
 class Playlist(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
-        super().__init__()
+        super().__init__(api)
         playlist = api.get_playlist(PlaylistId(b62_id))
         for i in range(len(playlist.contents.items)):
             item = playlist.contents.items[i]
@@ -177,7 +250,7 @@ class Playlist(Collection):
             playable_type = split[1]
             playable_id = split[2]
             metadata = [
-                MetadataEntry("musicbrainztrackid", playable_id),
+                MetadataEntry("spotid", playable_id),
                 MetadataEntry("playlist", playlist.attributes.name),
                 MetadataEntry("playlist_length", playlist.length),
                 MetadataEntry("playlist_owner", playlist.owner_username),
@@ -216,8 +289,8 @@ class Playlist(Collection):
 
 class Track(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
-        super().__init__()
-        metadata = [MetadataEntry("musicbrainztrackid", b62_id)]
+        super().__init__(api)
+        metadata = [MetadataEntry("spotid", b62_id)]
         self.playables.append(
             PlayableData(
                 PlayableType.TRACK,
@@ -231,8 +304,8 @@ class Track(Collection):
 
 class Episode(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
-        super().__init__()
-        metadata = [MetadataEntry("musicbrainztrackid", b62_id)]
+        super().__init__(api)
+        metadata = [MetadataEntry("spotid", b62_id)]
         self.playables.append(
             PlayableData(
                 PlayableType.EPISODE,

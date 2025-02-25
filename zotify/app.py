@@ -190,7 +190,7 @@ class App:
                 exit(1)
         if len(collections) > 0:
             with Loader("Scanning collections..."):
-                self.scan(collections)
+                self.scan(collections, args.match)
             self.download_all(collections)
         else:
             Logger.log(LogChannel.WARNINGS, "there is nothing to do")
@@ -251,7 +251,11 @@ class App:
                 raise ParseError(f'Unsupported content type "{id_type}"')
         return collections
 
-    def scan(self, collections: list[Collection]):
+    def scan(self, collections: list[Collection], match: bool):
+        if match:
+            for collection in collections:
+                collection.get_match()
+
         if self.__config.skip_previous:
             for collection in collections:
                 try:
@@ -263,6 +267,7 @@ class App:
                     Logger.log(
                         LogChannel.WARNINGS, f"{err} Cannot scan for existing tracks"
                     )
+
         if self.__config.skip_duplicates:
             for collection in collections:
                 try:

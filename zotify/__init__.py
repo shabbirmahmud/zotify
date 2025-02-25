@@ -73,6 +73,8 @@ RATE_LIMIT_INTERVAL_SECS = 30
 RATE_LIMIT_CALLS_NORMAL = 9
 RATE_LIMIT_CALLS_REDUCED = 3
 
+API_MAX_REQUEST_LIMIT = 50
+
 
 class Session(LibrespotSession):
     def __init__(

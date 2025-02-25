@@ -54,6 +54,12 @@ def main():
     )
     parser.add_argument("--username", type=str, default="", help="Account username")
     parser.add_argument("--token", type=str, default="", help="Account token")
+    parser.add_argument(
+        "-m",
+        "--match",
+        action="store_true",
+        help="Match downloaded track filenames to corresponding tracks in collection",
+    )
     group.add_argument(
         "urls",
         type=str,
