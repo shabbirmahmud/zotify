@@ -72,6 +72,19 @@ Downloads specified items. Accepts any combination of track, album, playlist, ep
 
 </details>
 
+### Compatibility with official version
+
+Do note that `--skip-previous` and `--skip-duplicates` won't immediately work with playlists and albums downloaded using the official version (both dev and main branches). To make the playlist/album compatible with this fork such that `--skip-previous` and `--skip-duplicates` will both work, simply add the `-m` or `--match` flag to the download command.
+
+For example:
+```
+zotify -m <playlist/album_url>
+zotify -m -p
+zotify -m -d <text_file_with_urls_to_download>
+```
+This only needs to be done once per existing album or playlist.
+
+
 ### More about search
 
 - `-c` or `--category` can be used to limit search results to certain categories.
