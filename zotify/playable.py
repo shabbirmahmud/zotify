@@ -89,8 +89,6 @@ class Playable:
         file_path = library.joinpath(output).expanduser()
         check_path = Path(f"{file_path}.{ext}")
         if check_path.exists() and not replace:
-            f = LocalFile(check_path)
-            f.write_metadata(self.metadata)
             raise FileExistsError("File already downloaded")
         else:
             file_path.parent.mkdir(parents=True, exist_ok=True)
