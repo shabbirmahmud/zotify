@@ -5,7 +5,7 @@ from subprocess import PIPE, Popen
 from music_tag import load_file
 from mutagen.oggvorbis import OggVorbisHeaderError
 
-from zotify.utils import AudioFormat, MetadataEntry
+from zotify.utils import AudioFormat, MetadataEntry, Quality
 
 
 class TranscodingError(RuntimeError): ...
@@ -25,6 +25,7 @@ class LocalFile:
     def transcode(
         self,
         audio_format: AudioFormat | None = None,
+        download_quality: Quality | None = None,
         bitrate: int = -1,
         replace: bool = False,
         ffmpeg: str = "",
@@ -63,7 +64,10 @@ class LocalFile:
                 f"Cannot overwrite source, target file {path} already exists."
             )
 
-        cmd.extend(["-b:a", str(bitrate) + "k"]) if bitrate > 0 else None
+        if bitrate > 0:
+            cmd.extend(["-b:a", str(bitrate) + "k"])
+        else:
+            cmd.extend(["-b:a", str(Quality.get_bitrate(download_quality)) + "k"])
         cmd.extend(["-c:a", audio_format.value.name]) if audio_format else None
         cmd.extend(opt_args)
         cmd.append(str(path))

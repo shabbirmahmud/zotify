@@ -59,6 +59,20 @@ class Quality(Enum):
         except Exception:
             return s
 
+    @staticmethod
+    def get_bitrate(quality):
+        match quality:
+            case Quality.NORMAL:
+                bitrate = 96
+            case Quality.HIGH:
+                bitrate = 160
+            case Quality.VERY_HIGH:
+                bitrate = 320
+            case Quality.AUTO:
+                bitrate = 160
+
+        return bitrate
+
 
 class ImageSize(IntEnum):
     SMALL = 0  # 64px

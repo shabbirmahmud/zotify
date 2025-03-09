@@ -384,6 +384,7 @@ class App:
                         with Loader("Converting audio..."):
                             file.transcode(
                                 self.__config.audio_format,
+                                self.__config.download_quality,
                                 self.__config.transcode_bitrate,
                                 True,
                                 self.__config.ffmpeg_path,
