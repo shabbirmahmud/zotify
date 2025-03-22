@@ -57,7 +57,10 @@ class Collection:
             for file in iglob(scan_path):
                 f_path = Path(file)
                 f = LocalFile(f_path)
-                existing[f.get_metadata("spotid")] = f_path.stem
+                try:
+                    existing[f.get_metadata("spotid")] = f_path.stem
+                except IndexError:
+                    pass
 
             for playable in self.playables:
                 if playable.id in existing.keys():
@@ -92,7 +95,10 @@ class Collection:
                 if self.path.exists() and f_path.match(collection_path):
                     continue
                 f = LocalFile(f_path)
-                existing[f.get_metadata("spotid")] = f_path.stem
+                try:
+                    existing[f.get_metadata("spotid")] = f_path.stem
+                except IndexError:
+                    pass
 
             for playable in self.playables:
                 if playable.id in existing.keys():
