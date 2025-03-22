@@ -86,13 +86,22 @@ class Playable:
                 output = output.replace(
                     "{" + meta.name + "}", fix_filename(meta.string)
                 )
+            if meta.name == "spotid":
+                spotid = meta.string
+
         file_path = library.joinpath(output).expanduser()
         check_path = Path(f"{file_path}.{ext}")
-        if check_path.exists() and not replace:
-            raise FileExistsError("File already downloaded")
+        if check_path.exists():
+            f = LocalFile(check_path)
+            if f.get_metadata("spotid") != spotid:
+                file_path = Path(f"{file_path} (SpotId:{spotid[-5:]})")
+            else:
+                if not replace:
+                    raise FileExistsError("File already downloaded")
         else:
             file_path.parent.mkdir(parents=True, exist_ok=True)
-            return file_path
+
+        return file_path
 
     def write_audio_stream(
         self,
