@@ -7,7 +7,7 @@ from zotify.app import App
 from zotify.config import CONFIG_PATHS, CONFIG_VALUES
 from zotify.utils import OptionalOrFalse
 
-VERSION = "0.9.10"
+VERSION = "0.9.11"
 
 
 def main():
