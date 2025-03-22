@@ -82,10 +82,17 @@ class Playable:
         if not isinstance(library, Path):
             library = Path(library)
         for meta in self.metadata:
-            if meta.string is not None:
+            if meta.string is not None and len(meta.string) < 100:
                 output = output.replace(
                     "{" + meta.name + "}", fix_filename(meta.string)
                 )
+            else:
+                if "," in meta.string:
+                    shortened = ",".join(meta.string.split(",", 3)[:3])
+                else:
+                    shortened = f"{meta.string[:50]}..."
+                output = output.replace("{" + meta.name + "}", fix_filename(shortened))
+
             if meta.name == "spotid":
                 spotid = meta.string
 
