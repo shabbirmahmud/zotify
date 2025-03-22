@@ -1,4 +1,4 @@
-from argparse import Action, ArgumentError
+from argparse import Action
 from enum import Enum, IntEnum
 from pathlib import Path
 from re import IGNORECASE, sub
@@ -146,7 +146,7 @@ class OptionalOrFalse(Action):
         self,
         option_strings,
         dest,
-        nargs="?",
+        nargs=0,
         default=None,
         type=None,
         choices=None,
@@ -175,8 +175,6 @@ class OptionalOrFalse(Action):
         )
 
     def __call__(self, parser, namespace, values, option_string=None):
-        if values is not None:
-            raise ArgumentError(self, "expected 0 arguments")
         setattr(
             namespace,
             self.dest,

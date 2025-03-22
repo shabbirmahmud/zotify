@@ -252,6 +252,9 @@ class App:
         return collections
 
     def scan(self, collections: list[Collection], match: bool):
+        if self.__config.replace_existing:
+            return
+
         if match:
             for collection in collections:
                 collection.get_match()
