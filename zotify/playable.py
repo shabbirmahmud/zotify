@@ -95,7 +95,10 @@ class Playable:
             return file_path
 
     def write_audio_stream(
-        self, output: Path | str, p_bar: tqdm = tqdm(disable=True)
+        self,
+        output: Path | str,
+        p_bar: tqdm = tqdm(disable=True),
+        real_time: bool = False,
     ) -> LocalFile:
         """
         Writes audio stream to file
@@ -107,12 +110,24 @@ class Playable:
         """
         if not isinstance(output, Path):
             output = Path(output).expanduser()
+
         file = f"{output}.ogg"
+        time_start = time()
+        downloaded = 0
+
         with open(file, "wb") as f, p_bar as p_bar:
             chunk = None
             while chunk != b"":
                 chunk = self.input_stream.stream().read(1024)
                 p_bar.update(f.write(chunk))
+                if real_time:
+                    downloaded += len(chunk)
+                    delta_current = time() - time_start
+                    delta_required = (downloaded / self.input_stream.size) * (
+                        self.duration / 1000
+                    )
+                    if delta_required > delta_current:
+                        sleep(delta_required - delta_current)
         return LocalFile(Path(file), AudioFormat.VORBIS)
 
     def get_cover_art(self, size: ImageSize = ImageSize.LARGE) -> bytes:
@@ -200,42 +215,6 @@ class Track(PlayableContentFeeder.LoadedStream, Playable):
             )
             return self.__lyrics
 
-    def write_audio_stream(
-        self,
-        output: Path | str,
-        p_bar: tqdm = tqdm(disable=True),
-        real_time: bool = False,
-    ) -> LocalFile:
-        """
-        Writes audio stream to file
-        Args:
-            output: File path of saved audio stream
-            p_bar: tqdm progress bar
-            real_time: Enable delay to emulate real time streaming
-        Returns:
-            LocalFile object
-        """
-        if not isinstance(output, Path):
-            output = Path(output).expanduser()
-        if not real_time:
-            return super().write_audio_stream(output)
-        file = f"{output}.ogg"
-        time_start = time()
-        downloaded = 0
-        with open(file, "wb") as f, p_bar as p_bar:
-            chunk = None
-            while chunk != b"":
-                chunk = self.input_stream.stream().read(1024)
-                p_bar.update(f.write(chunk))
-                downloaded += len(chunk)
-                delta_current = time() - time_start
-                delta_required = (downloaded / self.input_stream.size) * (
-                    self.duration / 1000
-                )
-                if delta_required > delta_current:
-                    sleep(delta_required - delta_current)
-        return LocalFile(Path(file), AudioFormat.VORBIS)
-
 
 class Episode(PlayableContentFeeder.LoadedStream, Playable):
     def __init__(self, episode: PlayableContentFeeder.LoadedStream, api):
@@ -266,27 +245,3 @@ class Episode(PlayableContentFeeder.LoadedStream, Playable):
             MetadataEntry("date", self.publish_time),
             MetadataEntry("title", self.name),
         ]
-
-    def write_audio_stream(
-        self, output: Path | str, p_bar: tqdm = tqdm(disable=True)
-    ) -> LocalFile:
-        """
-        Writes audio stream to file.
-        Uses external source if available for faster download.
-        Args:
-            output: File path of saved audio stream
-            p_bar: tqdm progress bar
-        Returns:
-            LocalFile object
-        """
-        if not isinstance(output, Path):
-            output = Path(output).expanduser()
-        if not bool(self.external_url):
-            return super().write_audio_stream(output)
-        file = f"{output}.{self.external_url.rsplit('.', 1)[-1]}"
-        with get(self.external_url, stream=True) as r, open(
-            file, "wb"
-        ) as f, p_bar as p_bar:
-            for chunk in r.iter_content(chunk_size=1024):
-                p_bar.update(f.write(chunk))
-        return LocalFile(Path(file))
