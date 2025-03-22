@@ -42,7 +42,10 @@ class Collection:
                     "{" + meta.name + "}", fix_filename(meta.string)
                 )
 
-        self.path = library.joinpath(output).expanduser().parent
+        if type(self) is Track or type(self) is Episode:
+            self.path = library
+        else:
+            self.path = library.joinpath(output).expanduser().parent
 
     def get_existing(self, ext: str) -> dict[str, str]:
         existing: dict[str, str] = {}
@@ -50,11 +53,14 @@ class Collection:
         if self.path is None:
             self.set_path()
         if self.path.exists():
-            file_path = "*.{}".format(ext)
+            if type(self) is Track or type(self) is Episode:
+                file_path = "**/*.{}".format(ext)
+            else:
+                file_path = "*.{}".format(ext)
             scan_path = str(self.path.joinpath(file_path))
 
             # Check contents of path
-            for file in iglob(scan_path):
+            for file in iglob(scan_path, recursive=True):
                 f_path = Path(file)
                 f = LocalFile(f_path)
                 try:
@@ -190,7 +196,11 @@ class Album(Collection):
         album = api.get_metadata_4_album(AlbumId.from_base62(b62_id))
         for disc in album.disc:
             for track in disc.track:
-                metadata = [MetadataEntry("spotid", bytes_to_base62(track.gid))]
+                metadata = [
+                    MetadataEntry("spotid", bytes_to_base62(track.gid)),
+                    MetadataEntry("album_artist", album.artist[0].name),
+                    MetadataEntry("album", album.name),
+                ]
                 self.playables.append(
                     PlayableData(
                         PlayableType.TRACK,
@@ -217,7 +227,11 @@ class Artist(Collection):
             )
             for disc in album.disc:
                 for track in disc.track:
-                    metadata = [MetadataEntry("spotid", bytes_to_base62(track.gid))]
+                    metadata = [
+                        MetadataEntry("spotid", bytes_to_base62(track.gid)),
+                        MetadataEntry("album_artist", album.artist[0].name),
+                        MetadataEntry("album", album.name),
+                    ]
                     self.playables.append(
                         PlayableData(
                             PlayableType.TRACK,
@@ -234,7 +248,10 @@ class Show(Collection):
         super().__init__(api)
         show = api.get_metadata_4_show(ShowId.from_base62(b62_id))
         for episode in show.episode:
-            metadata = [MetadataEntry("spotid", bytes_to_base62(episode.gid))]
+            metadata = [
+                MetadataEntry("spotid", bytes_to_base62(episode.gid)),
+                MetadataEntry("podcast", show.name),
+            ]
             self.playables.append(
                 PlayableData(
                     PlayableType.EPISODE,
