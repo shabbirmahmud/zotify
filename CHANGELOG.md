@@ -10,7 +10,8 @@
 
 - Added `--download-real-time` feature back.
 - Added implementation for `--skip-previous` as it was included as a config parameter but was unimplemented.
-- Added implementation for `--skip-duplicates` as it was included as a config parameter but was unimplemented. Note that tracks must have the trackid metadata for this to work. TBA: Procedure to add trackid metadata for tracks without it
+- Added implementation for `--skip-duplicates` as it was included as a config parameter but was unimplemented. Note that tracks must have the trackid metadata for this to work.
+- Added `-m` or `--match` flag to match output track filenames to files already existing in the same playlist/album folder and write their corresponding trackid metadata
 
 ### Removals
 

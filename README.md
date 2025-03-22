@@ -74,7 +74,7 @@ Downloads specified items. Accepts any combination of track, album, playlist, ep
 
 ### Compatibility with official version
 
-Do note that `--skip-previous` and `--skip-duplicates` won't immediately work with playlists and albums downloaded using the official version (both dev and main branches). To make the playlist/album compatible with this fork such that `--skip-previous` and `--skip-duplicates` will both work, simply add the `-m` or `--match` flag to the download command.
+Do note that `--skip-previous` and `--skip-duplicates` won't immediately work with playlists and albums downloaded using the official version (both dev and main branches). To make the playlist/album compatible with this fork such that `--skip-previous` and `--skip-duplicates` will both work, simply add the `-m` or `--match` flag to the download command. This will try to match filenames present in the library to ones that are to be downloaded. Note that output formats should match between the current download command and the existing files.
 
 For example:
 ```
