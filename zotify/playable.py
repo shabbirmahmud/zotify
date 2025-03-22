@@ -100,11 +100,19 @@ class Playable:
         check_path = Path(f"{file_path}.{ext}")
         if check_path.exists():
             f = LocalFile(check_path)
-            if f.get_metadata("spotid") != spotid:
+            f_spotid = None
+
+            try:
+                f_spotid = f.get_metadata("spotid")
+            except IndexError:
+                pass
+
+            if f_spotid != spotid:
                 file_path = Path(f"{file_path} (SpotId:{spotid[-5:]})")
             else:
                 if not replace:
                     raise FileExistsError("File already downloaded")
+
         else:
             file_path.parent.mkdir(parents=True, exist_ok=True)
 
