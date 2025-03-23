@@ -252,6 +252,7 @@ class ApiClient(LibrespotApiClient):
         params: dict[str, Any] = {},
         limit: int = 20,
         offset: int = 0,
+        raw_url: bool = False,
     ) -> dict[str, Any]:
         """
         Requests data from API
@@ -269,10 +270,13 @@ class ApiClient(LibrespotApiClient):
             "Accept-Language": self.__session.language(),
             "app-platform": "WebPlayer",
         }
-        params["limit"] = limit
-        params["offset"] = offset
+        if not raw_url:
+            params["limit"] = limit
+            params["offset"] = offset
 
-        response = get(API_URL + url, headers=headers, params=params)
+            response = get(API_URL + url, headers=headers, params=params)
+        else:
+            response = get(url, headers=headers)
         data = response.json()
 
         try:

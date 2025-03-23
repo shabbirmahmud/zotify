@@ -44,64 +44,112 @@ class Selection:
             "episode",
         ],
     ) -> list[str]:
+        offset = 0
         categories = ",".join(category)
-        with Loader("Searching..."):
-            country = self.__session.api().invoke_url("me")["country"]
-            resp = self.__session.api().invoke_url(
-                "search",
-                {
-                    "q": search_text,
-                    "type": categories,
-                    "include_external": "audio",
-                    "market": country,
-                },
-                limit=10,
-                offset=0,
-            )
+        ids = []
+        while True:
+            with Loader("Searching..."):
+                country = self.__session.api().invoke_url("me")["country"]
+                resp = self.__session.api().invoke_url(
+                    "search",
+                    {
+                        "q": search_text,
+                        "type": categories,
+                        "include_external": "audio",
+                        "market": country,
+                    },
+                    limit=10,
+                    offset=offset,
+                )
 
-        print(f'Search results for "{search_text}"')
-        count = 0
-        for cat in categories.split(","):
-            label = cat + "s"
-            items = resp[label]["items"]
-            if len(items) > 0:
-                print(f"\n{label.capitalize()}:")
-                try:
-                    self.__print(count, items, *self.__print_labels[cat])
-                except KeyError:
-                    self.__print(count, items, "name")
-                count += len(items)
-                self.__items.extend(items)
-        return self.__get_selection()
+            print(f'Search results for "{search_text}"')
+            count = 0
+            next_page = {}
+            self.__items = []
+            for cat in categories.split(","):
+                label = cat + "s"
+                items = resp[label]["items"]
+                next_page[label] = resp[label]["next"]
+                if len(items) > 0:
+                    print(f"\n{label.capitalize()}:")
+                    try:
+                        self.__print(count, items, *self.__print_labels[cat])
+                    except KeyError:
+                        self.__print(count, items, "name")
+                    count += len(items)
+                    self.__items.extend(items)
+
+            for id in self.__get_selection(allow_empty=True):
+                ids.append(id)
+
+            next_flag = False
+            for page in next_page.values():
+                if page is not None and next_flag is False:
+                    next_flag = True
+                    params = page.split("?", 1)[1]
+                    page_offset = int(params.split("&")[0].split("=")[1])
+                    offset = page_offset
+                    break
+
+            if not next_flag:
+                break
+
+            get_next = self.__get_next_prompt()
+            if get_next.lower() == "n":
+                break
+
+        return ids
 
     def get(self, category: str, name: str = "", content: str = "") -> list[str]:
         with Loader("Fetching items..."):
             r = self.__session.api().invoke_url(f"me/{category}", limit=50)
+
+        ids = []
+        while True:
             if content != "":
                 r = r[content]
             resp = r["items"]
 
-        for i in range(len(resp)):
-            try:
-                item = resp[i][name]
-            except KeyError:
-                item = resp[i]
-            self.__items.append(item)
-            print(
-                "{:<2} {:<38}".format(i + 1, self.__fix_string_length(item["name"], 38))
-            )
-        return self.__get_selection()
+            self.__items = []
+            for i in range(len(resp)):
+                try:
+                    item = resp[i][name]
+                except KeyError:
+                    item = resp[i]
+                self.__items.append(item)
+                print(
+                    "{:<2} {:<38}".format(
+                        i + 1, self.__fix_string_length(item["name"], 38)
+                    )
+                )
+
+            for id in self.__get_selection():
+                ids.append(id)
+
+            if r["next"] is None:
+                break
+
+            get_next = self.__get_next_prompt()
+            if get_next.lower() == "n":
+                break
+
+            with Loader("Fetching items..."):
+                r = self.__session.api().invoke_url(r["next"], raw_url=True)
+
+        return ids
 
     @staticmethod
     def from_file(file_path: Path) -> list[str]:
         with open(file_path, "r", encoding="utf-8") as f:
             return [line.strip() for line in f.readlines()]
 
-    def __get_selection(self) -> list[str]:
+    def __get_selection(self, allow_empty: bool = False) -> list[str]:
         print("\nResults to save (eg: 1,2,5 1-3)")
         selection = ""
         while len(selection) == 0:
             selection = input("==> ")
+            if len(selection) == 0 and allow_empty:
+                return []
         ids = []
         selections = selection.split(",")
         for i in selections:
@@ -148,6 +196,16 @@ class Selection:
         if len(text) > max_length:
             return text[: max_length - 3] + "..."
         return text
+
+    def __get_next_prompt(self) -> str:
+        print("\nGet next page? Y/n")
+        get_next = None
+        while get_next not in ["Y", "y", "N", "n"]:
+            get_next = input("==> ")
+            if len(get_next) == 0:
+                get_next = "y"
+
+        return get_next
 
 
 class App:
