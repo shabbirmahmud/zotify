@@ -462,6 +462,9 @@ class App:
                             track.get_cover_art(self.__config.artwork_size)
                         )
 
+                # Remove temp filename
+                file.clean_filename()
+
                 # Reset rate limit counter for every successful download
                 self.rate_limit_hits = 0
 

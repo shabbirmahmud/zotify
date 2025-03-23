@@ -135,7 +135,7 @@ class Playable:
         if not isinstance(output, Path):
             output = Path(output).expanduser()
 
-        file = f"{output}.ogg"
+        file = f"{output}_tmp.ogg"
         time_start = time()
         downloaded = 0
 

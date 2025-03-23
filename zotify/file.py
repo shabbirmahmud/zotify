@@ -130,3 +130,13 @@ class LocalFile:
         """
         f = load_file(self.__path)
         return f[tag].value
+
+    def clean_filename(self) -> None:
+        """
+        Removes tmp suffix on filename
+        Args:
+            None
+        """
+        path = self.__path
+        clean = path.name.replace("_tmp", "")
+        path.rename(path.parent.joinpath(clean))
