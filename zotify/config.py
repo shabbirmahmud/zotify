@@ -35,6 +35,7 @@ PRINT_PROGRESS = "print_progress"
 PRINT_SKIPS = "print_skips"
 PRINT_WARNINGS = "print_warnings"
 REPLACE_EXISTING = "replace_existing"
+SAVE_GENRE = "save_genre"
 SAVE_METADATA = "save_metadata"
 SAVE_SUBTITLES = "save_subtitles"
 SKIP_DUPLICATES = "skip_duplicates"
@@ -203,6 +204,12 @@ CONFIG_VALUES = {
         "type": bool,
         "args": ["--save-metadata"],
         "help": "Save metadata, required for other metadata options",
+    },
+    SAVE_GENRE: {
+        "default": False,
+        "type": bool,
+        "args": ["--save-genre"],
+        "help": "Add genre tag to metadata",
     },
     ALL_ARTISTS: {
         "default": True,

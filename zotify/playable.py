@@ -3,7 +3,7 @@ from pathlib import Path
 from time import time, sleep
 
 from librespot.core import PlayableContentFeeder
-from librespot.metadata import AlbumId
+from librespot.metadata import AlbumId, ArtistId
 from librespot.proto import Metadata_pb2 as Metadata
 from librespot.structure import GeneralAudioStream
 from librespot.util import bytes_to_hex
@@ -190,7 +190,7 @@ class Track(PlayableContentFeeder.LoadedStream, Playable):
     def __default_metadata(self) -> list[MetadataEntry]:
         date = self.album.date
         if not hasattr(self.album, "genre"):
-            self.track.album = self.__api().get_metadata_4_album(
+            self.track.album = self.__api.get_metadata_4_album(
                 AlbumId.from_hex(bytes_to_hex(self.album.gid))
             )
         return [
@@ -238,6 +238,19 @@ class Track(PlayableContentFeeder.LoadedStream, Playable):
                 ]
             )
             return self.__lyrics
+
+    def add_genre(self) -> None:
+        if hasattr(self.album, "genre") and len(self.album.genre) != 0:
+            genre = self.album.genre
+        else:
+            artist_metadata = self.__api.get_metadata_4_artist(
+                ArtistId.from_hex(bytes_to_hex(self.artist[0].gid))
+            )
+            genre = artist_metadata.genre
+
+        self.metadata.extend(
+            [MetadataEntry("genre", genre[0] if len(genre) > 0 else "None")]
+        )
 
 
 class Episode(PlayableContentFeeder.LoadedStream, Playable):

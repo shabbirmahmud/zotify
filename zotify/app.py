@@ -396,6 +396,8 @@ class App:
 
                 # Create download location and generate file name
                 track.metadata.extend(playable.metadata)
+                if self.__config.save_genre:
+                    track.add_genre()
                 try:
                     output = track.create_output(
                         self.__config.audio_format.value.ext,
