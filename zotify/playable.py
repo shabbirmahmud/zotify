@@ -19,8 +19,8 @@ from zotify.utils import (
     fix_filename,
 )
 
-IMG_URL = "https://i.s" + "cdn.co/image/"
-LYRICS_URL = "https://sp" + "client.wg.sp" + "otify.com/color-lyrics/v2/track/"
+IMG_URL = "https://i.scdn.co/image/"
+LYRICS_URL = "https://spclient.wg.spotify.com/color-lyrics/v2/track/"
 
 
 class Lyrics:
@@ -233,7 +233,7 @@ class Track(PlayableContentFeeder.LoadedStream, Playable):
             return self.__lyrics
         except AttributeError:
             self.__lyrics = Lyrics(
-                self.__api.invoke_url(LYRICS_URL + bytes_to_base62(self.track.gid))[
+                self.__api.invoke_url(LYRICS_URL + bytes_to_base62(self.track.gid), raw_url=True)[
                     "lyrics"
                 ]
             )
