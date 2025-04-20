@@ -216,31 +216,43 @@ class Artist(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
         super().__init__(api)
         artist = api.get_metadata_4_artist(ArtistId.from_base62(b62_id))
-        for album_group in (
-            artist.album_group
-            or artist.single_group
-            or artist.compilation_group
-            or artist.appears_on_group
-        ):
-            album = api.get_metadata_4_album(
-                AlbumId.from_base62(bytes_to_base62(album_group.album[0].gid))
-            )
-            for disc in album.disc:
-                for track in disc.track:
-                    metadata = [
-                        MetadataEntry("spotid", bytes_to_base62(track.gid)),
-                        MetadataEntry("album_artist", album.artist[0].name),
-                        MetadataEntry("album", album.name),
-                    ]
-                    self.playables.append(
-                        PlayableData(
-                            PlayableType.TRACK,
-                            bytes_to_base62(track.gid),
-                            config.album_library,
-                            config.output_album,
-                            metadata,
+        
+        # Process all content types: albums, singles, compilations, and appearances
+        all_groups = []
+        if artist.album_group:
+            all_groups.extend(artist.album_group)
+        if artist.single_group:
+            all_groups.extend(artist.single_group)
+        if artist.compilation_group:
+            all_groups.extend(artist.compilation_group)
+        if artist.appears_on_group:
+            all_groups.extend(artist.appears_on_group)
+            
+        for album_group in all_groups:
+            try:
+                album = api.get_metadata_4_album(
+                    AlbumId.from_base62(bytes_to_base62(album_group.album[0].gid))
+                )
+                for disc in album.disc:
+                    for track in disc.track:
+                        metadata = [
+                            MetadataEntry("spotid", bytes_to_base62(track.gid)),
+                            MetadataEntry("album_artist", album.artist[0].name),
+                            MetadataEntry("album", album.name),
+                        ]
+                        self.playables.append(
+                            PlayableData(
+                                PlayableType.TRACK,
+                                bytes_to_base62(track.gid),
+                                config.album_library,
+                                config.output_album,
+                                metadata,
+                            )
                         )
-                    )
+            except Exception as e:
+                # Skip albums that can't be processed
+                print(f"Error processing album: {e}")
+                continue
 
 
 class Show(Collection):
