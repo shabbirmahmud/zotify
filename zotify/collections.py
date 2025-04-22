@@ -194,12 +194,15 @@ class Album(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
         super().__init__(api)
         album = api.get_metadata_4_album(AlbumId.from_base62(b62_id))
+        total_discs = len(album.disc)
         for disc in album.disc:
             for track in disc.track:
                 metadata = [
                     MetadataEntry("spotid", bytes_to_base62(track.gid)),
                     MetadataEntry("album_artist", album.artist[0].name),
                     MetadataEntry("album", album.name),
+                    MetadataEntry("discnumber", disc.number),
+                    MetadataEntry("disctotal", total_discs),
                 ]
                 self.playables.append(
                     PlayableData(
@@ -233,12 +236,15 @@ class Artist(Collection):
                 album = api.get_metadata_4_album(
                     AlbumId.from_base62(bytes_to_base62(album_group.album[0].gid))
                 )
+                total_discs = len(album.disc)
                 for disc in album.disc:
                     for track in disc.track:
                         metadata = [
                             MetadataEntry("spotid", bytes_to_base62(track.gid)),
                             MetadataEntry("album_artist", album.artist[0].name),
                             MetadataEntry("album", album.name),
+                            MetadataEntry("discnumber", disc.number),
+                            MetadataEntry("disctotal", total_discs),
                         ]
                         self.playables.append(
                             PlayableData(
