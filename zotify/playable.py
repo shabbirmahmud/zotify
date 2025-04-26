@@ -108,7 +108,7 @@ class Playable:
                 pass
 
             if f_spotid != spotid:
-                file_path = Path(f"{file_path} (SpotId:{spotid[-5:]})")
+                file_path = Path(f"{file_path} (SpotId-{spotid[-5:]})")
             else:
                 if not replace:
                     raise FileExistsError("File already downloaded")
