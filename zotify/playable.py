@@ -108,7 +108,7 @@ class Playable:
                 pass
 
             if f_spotid != spotid:
-                file_path = Path(f"{file_path} (SpotId:{spotid[-5:]})")
+                file_path = Path(f"{file_path} (SpotId-{spotid[-5:]})")
             else:
                 if not replace:
                     raise FileExistsError("File already downloaded")
@@ -193,6 +193,10 @@ class Track(PlayableContentFeeder.LoadedStream, Playable):
             self.track.album = self.__api.get_metadata_4_album(
                 AlbumId.from_hex(bytes_to_hex(self.album.gid))
             )
+        
+        # Get disc total if available
+        disc_total = len(self.album.disc) if hasattr(self.album, "disc") else 1
+        
         return [
             MetadataEntry("album", self.album.name),
             MetadataEntry("album_artist", self.album.artist[0].name),
@@ -201,6 +205,8 @@ class Track(PlayableContentFeeder.LoadedStream, Playable):
             MetadataEntry("artists", [a.name for a in self.artist]),
             MetadataEntry("date", f"{date.year}-{date.month}-{date.day}"),
             MetadataEntry("disc", self.disc_number),
+            MetadataEntry("discnumber", self.disc_number),
+            MetadataEntry("disctotal", disc_total),
             MetadataEntry("duration", self.duration),
             MetadataEntry("explicit", self.explicit, "[E]" if self.explicit else ""),
             MetadataEntry("isrc", self.external_id[0].id),

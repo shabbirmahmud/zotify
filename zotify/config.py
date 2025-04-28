@@ -63,7 +63,7 @@ CONFIG_PATHS = {
 }
 
 OUTPUT_PATHS = {
-    "album": "{album_artist}/{album}/{track_number}. {artists} - {title}",
+    "album": "{album_artist}/{album}/Disc {discnumber}/{track_number}. {artists} - {title}",
     "podcast": "{podcast}/{episode_number} - {title}",
     "playlist_track": "{playlist}/{artists} - {title}",
     "playlist_episode": "{playlist}/{episode_number} - {title}",
