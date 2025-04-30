@@ -8,8 +8,10 @@ from typing import Any
 from time import time_ns, sleep
 from urllib.parse import urlencode, urlparse, parse_qs
 from limits import storage, strategies, RateLimitItemPerSecond
+import io
+import struct
 
-from librespot.audio import AudioKeyManager, CdnManager
+from librespot.audio import AudioKeyManager as LibrespotAudioKeyManager, CdnManager
 from librespot.audio.decoders import VorbisOnlyAudioQuality
 from librespot.audio.storage import ChannelManager
 from librespot.cache import CacheManager
@@ -26,6 +28,7 @@ from librespot.core import (
 from librespot.mercury import MercuryClient
 from librespot.metadata import EpisodeId, PlayableId, TrackId
 from librespot.proto import Authentication_pb2 as Authentication
+from librespot.crypto import Packet
 from pkce import generate_code_verifier, get_code_challenge
 from requests import HTTPError, get, post
 
@@ -74,6 +77,7 @@ RATE_LIMIT_CALLS_NORMAL = 9
 RATE_LIMIT_CALLS_REDUCED = 3
 
 API_MAX_REQUEST_LIMIT = 50
+AUDIO_KEY_RETRY_ATTEMPTS = 5
 
 
 class Session(LibrespotSession):
@@ -234,10 +238,8 @@ class Session(LibrespotSession):
 
     def api(self) -> ApiClient:
         # Check rate limiter before making calls to api
-        while not self.rate_limiter.check():
-            sleep(1)
+        self.rate_limiter.apply_limit()
 
-        self.rate_limiter.hit()
         return super().api()
 
 
@@ -450,6 +452,10 @@ class OAuth:
 
 
 class RateLimiter:
+    consecutive_hits: int = 0
+    last_server_limit_hit: int = 0
+    track_count: int = 0
+
     rate_limits = {
         RateLimitMode.NORMAL: RateLimitItemPerSecond(
             RATE_LIMIT_CALLS_NORMAL, RATE_LIMIT_INTERVAL_SECS
@@ -474,3 +480,77 @@ class RateLimiter:
     def set_mode(self, mode: RateLimitMode):
         self.mode = mode
         self.rate_limit = RateLimiter.rate_limits[self.mode]
+
+    def apply_limit(self):
+        while not self.check():
+            sleep(1)
+
+        self.hit()
+
+    def handle_server_limit_hit(self, check_consec: bool = False):
+        RateLimiter.last_server_limit_hit = RateLimiter.track_count
+
+        # Consecutive hits are counted per track. Do not update if
+        # called within get_audio_key method
+        if check_consec is True:
+            RateLimiter.consecutive_hits += 1
+
+            # Exit program if rate limit hit cutoff is reached
+            if RateLimiter.consecutive_hits > RATE_LIMIT_MAX_CONSECUTIVE_HITS:
+                raise Exception("EX02: Server too busy or down.")
+
+        # Reduce internal rate limiter
+        if self.mode == RateLimitMode.NORMAL:
+            self.set_mode(RateLimitMode.REDUCED)
+
+        # Sleep for one interval
+        sleep(RATE_LIMIT_INTERVAL_SECS)
+
+    def clear_consec_hits(self):
+        RateLimiter.consecutive_hits = 0
+
+    def check_restore_condition(self, count: int):
+        # Save current track count
+        RateLimiter.track_count = count
+
+        if (
+            self.mode == RateLimitMode.REDUCED
+            and (count - self.last_server_limit_hit) > RATE_LIMIT_RESTORE_CONDITION
+        ):
+            self.set_mode(RateLimitMode.NORMAL)
+            sleep(RATE_LIMIT_INTERVAL_SECS)
+
+
+class AudioKeyManager(LibrespotAudioKeyManager):
+    def get_audio_key(
+        self, gid: bytes, file_id: bytes, retry_attempts: int = AUDIO_KEY_RETRY_ATTEMPTS
+    ) -> bytes:
+        attempts = 0
+        while True:
+            seq: int
+            with self.__seq_holder_lock:
+                seq = self.__seq_holder
+                self.__seq_holder += 1
+            out = io.BytesIO()
+            out.write(file_id)
+            out.write(gid)
+            out.write(struct.pack(">i", seq))
+            out.write(self.__zero_short)
+            out.seek(0)
+            self.__session.send(Packet.Type.request_key, out.read())
+            callback = AudioKeyManager.SyncCallback(self)
+            self.__callbacks[seq] = callback
+            key = callback.wait_response()
+            if key is not None:
+                break
+
+            attempts += 1
+            if attempts > retry_attempts:
+                raise Exception("EX01: Failed fetching audio key!")
+
+            # Multiple attempts mean server rate limit was hit
+            self.__session.rate_limiter.handle_server_limit_hit()
+
+            # Use the same rate limiter used for api calls
+            self.__session.rate_limiter.apply_limit()
+        return key
