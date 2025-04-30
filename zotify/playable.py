@@ -239,7 +239,7 @@ class Track(PlayableContentFeeder.LoadedStream, Playable):
             return self.__lyrics
         except AttributeError:
             self.__lyrics = Lyrics(
-                self.__api.invoke_url(LYRICS_URL + bytes_to_base62(self.track.gid))[
+                self.__api.invoke_url(LYRICS_URL + bytes_to_base62(self.track.gid), raw_url=True)[
                     "lyrics"
                 ]
             )
