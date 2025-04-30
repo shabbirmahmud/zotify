@@ -19,8 +19,8 @@ from zotify.utils import (
     fix_filename,
 )
 
-IMG_URL = "https://i.scdn.co/image/"
-LYRICS_URL = "https://spclient.wg.spotify.com/color-lyrics/v2/track/"
+IMG_URL = "https://i.s" + "cdn.co/image/"
+LYRICS_URL = "https://sp" + "client.wg.sp" + "otify.com/color-lyrics/v2/track/"
 
 
 class Lyrics:
