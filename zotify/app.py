@@ -423,7 +423,7 @@ class App:
                     else:
                         with Loader("Fetching lyrics..."):
                             try:
-                                track.lyrics().save(output)
+                                track.get_lyrics().save(output)
                             except FileNotFoundError as e:
                                 Logger.log(LogChannel.SKIPS, str(e))
                 Logger.log(
