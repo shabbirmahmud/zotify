@@ -26,8 +26,8 @@ LYRICS_URL = "https://sp" + "client.wg.sp" + "otify.com/color-lyrics/v2/track/"
 class Lyrics:
     def __init__(self, lyrics: dict, **kwargs):
         self.__lines = []
-        self.__sync_type = lyrics["syncType"]
-        for line in lyrics["lines"]:
+        self.__sync_type = lyrics["lyrics"]["syncType"]
+        for line in lyrics["lyrics"]["lines"]:
             self.__lines.append(line["words"] + "\n")
         if self.__sync_type == "line_synced":
             self.__lines_synced = []
@@ -193,10 +193,10 @@ class Track(PlayableContentFeeder.LoadedStream, Playable):
             self.track.album = self.__api.get_metadata_4_album(
                 AlbumId.from_hex(bytes_to_hex(self.album.gid))
             )
-        
+
         # Get disc total if available
         disc_total = len(self.album.disc) if hasattr(self.album, "disc") else 1
-        
+
         return [
             MetadataEntry("album", self.album.name),
             MetadataEntry("album_artist", self.album.artist[0].name),
@@ -238,10 +238,16 @@ class Track(PlayableContentFeeder.LoadedStream, Playable):
         try:
             return self.__lyrics
         except AttributeError:
+            lyrics_request = (
+                "/image/https%3A%2F%2Fi.scdn.co%2Fimage%2F"
+                + str(bytes_to_hex(self.cover_images[ImageSize.LARGE].file_id))
+                + "?format=json&vocalRemoval=false&market=from_token"
+            )
             self.__lyrics = Lyrics(
-                self.__api.invoke_url(LYRICS_URL + bytes_to_base62(self.track.gid), raw_url=True)[
-                    "lyrics"
-                ]
+                self.__api.invoke_url(
+                    LYRICS_URL + bytes_to_base62(self.track.gid) + lyrics_request,
+                    raw_url=True,
+                )
             )
             return self.__lyrics
 

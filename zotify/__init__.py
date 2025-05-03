@@ -10,6 +10,7 @@ from urllib.parse import urlencode, urlparse, parse_qs
 from limits import storage, strategies, RateLimitItemPerSecond
 import io
 import struct
+import random
 
 from librespot.audio import AudioKeyManager as LibrespotAudioKeyManager, CdnManager
 from librespot.audio.decoders import VorbisOnlyAudioQuality
@@ -35,6 +36,7 @@ from requests import HTTPError, get, post
 from zotify.loader import Loader
 from zotify.playable import Episode, Track
 from zotify.utils import Quality, RateLimitMode
+from zotify.agents import USER_AGENTS
 
 API_URL = "https://api.sp" + "otify.com/v1/"
 AUTH_URL = "https://accounts.sp" + "otify.com/"
@@ -247,6 +249,7 @@ class ApiClient(LibrespotApiClient):
     def __init__(self, session: Session):
         super(ApiClient, self).__init__(session)
         self.__session = session
+        self.__agent = random.choice(USER_AGENTS)
 
     def invoke_url(
         self,
@@ -271,6 +274,7 @@ class ApiClient(LibrespotApiClient):
             "Accept": "application/json",
             "Accept-Language": self.__session.language(),
             "app-platform": "WebPlayer",
+            "User-Agent": self.__agent,
         }
         if not raw_url:
             params["limit"] = limit
