@@ -26,7 +26,7 @@ Requires Python 3.11 or greater. \
 Optionally requires FFmpeg to save tracks as anything other than Ogg Vorbis.
 (FFmpeg installation instructions available [here](https://github.com/DraftKinner/zotify/blob/main/INSTALLATION.md))
 
-Enter the following command in terminal to install the latest stable verion of Zotify. \
+Enter the following command in terminal to install the latest stable version of Zotify.
 ```text
 python -m pip install git+https://github.com/DraftKinner/zotify.git@v1.0.0
 
