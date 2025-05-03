@@ -26,7 +26,6 @@ OUTPUT_PLAYLIST_TRACK = "output_playlist_track"
 OUTPUT_PLAYLIST_EPISODE = "output_playlist_episode"
 OUTPUT_PODCAST = "output_podcast"
 OUTPUT_SINGLE = "output_single"
-PATH_ARCHIVE = "path_archive"
 PLAYLIST_LIBRARY = "playlist_library"
 PODCAST_LIBRARY = "podcast_library"
 PRINT_DOWNLOADS = "print_downloads"
@@ -59,7 +58,6 @@ LIBRARY_PATHS = {
 CONFIG_PATHS = {
     "conf": SYSTEM_PATHS[PLATFORM].joinpath("config.json"),
     "creds": SYSTEM_PATHS[PLATFORM].joinpath("credentials.json"),
-    "archive": SYSTEM_PATHS[PLATFORM].joinpath("track_archive"),
 }
 
 OUTPUT_PATHS = {
@@ -75,12 +73,6 @@ CONFIG_VALUES = {
         "type": Path,
         "args": ["--credentials"],
         "help": "Path to credentials file",
-    },
-    PATH_ARCHIVE: {
-        "default": CONFIG_PATHS["archive"],
-        "type": Path,
-        "args": ["--archive"],
-        "help": "Path to track archive file",
     },
     ALBUM_LIBRARY: {
         "default": LIBRARY_PATHS["album"],
