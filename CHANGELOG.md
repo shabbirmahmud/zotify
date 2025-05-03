@@ -1,10 +1,11 @@
 # STILL IN DEVELOPMENT, EVERYTHING HERE IS SUBJECT TO CHANGE
 
-## UNRELEASED
+## v1.0.0 (Added in this fork)
 
 ### Changes
 
 - Changed music-tag package used to a mirror of the repository hosted at zotify.xyz, in case it goes down again.
+- Changed default album path from `{album_artist}/{album}/{track_number}. {artists} - {title}` to `{album_artist}/{album}/Disc {discnumber}/{track_number}. {artists} - {title}`
 
 ### Additions
 
@@ -12,10 +13,12 @@
 - Added implementation for `--skip-previous` as it was included as a config parameter but was unimplemented.
 - Added implementation for `--skip-duplicates` as it was included as a config parameter but was unimplemented. Note that tracks must have the trackid metadata for this to work.
 - Added `-m` or `--match` flag to match output track filenames to files already existing in the same playlist/album folder and write their corresponding trackid metadata
+- Added `--save-genre` flag to include genre in metadata
+- Added total number of disc as metadata for album downloads
 
 ### Removals
 
-- `--archive` to be removed as it is not used for `--skip-previous` and `--skip-duplicates`
+- `--archive` removed as it is not used for `--skip-previous` and `--skip-duplicates`
 
 ### Fixes
 
@@ -25,7 +28,9 @@
 - Fixed `RuntimeError: Cannot get alternative track` from terminating the program.
 - Fixed downloading multiple collections from downloading everything twice.
 - Fixed `-d` or `--download` option not detecting the file.
-- Fixed `Failed fetching audio key!` error from continuously hitting API rate limits. Implemented a flat rate limiter on calls to API. When usage traffic is high and rate limits are hit on the server end, the current track is skipped and the program will continue at a reduced internal rate limit.
+- Fixed `Failed fetching audio key!` error from continuously hitting API rate limits. Implemented a flat rate limiter on calls to API. When usage traffic is high and rate limits are hit on the server end, the current track is skipped after exhausting a preconfigured number of attempts and the program will continue at a reduced internal rate limit.
+- Fixed download using artist url not working
+- Fixed lyrics download not working
 
 ## v1.0.0
 

@@ -26,8 +26,23 @@ Requires Python 3.11 or greater. \
 Optionally requires FFmpeg to save tracks as anything other than Ogg Vorbis.
 (FFmpeg installation instructions available [here](https://github.com/DraftKinner/zotify/blob/main/INSTALLATION.md))
 
-Enter the following command in terminal to install Zotify. \
-`python -m pip install git+https://github.com/DraftKinner/zotify.git`
+Enter the following command in terminal to install the latest stable verion of Zotify. \
+```text
+python -m pip install git+https://github.com/DraftKinner/zotify.git@v1.0.0
+
+or
+
+pipx install git+https://github.com/DraftKinner/zotify.git@v1.0.0
+```
+
+Or to install the latest version, use:
+```text
+python -m pip install git+https://github.com/DraftKinner/zotify.git
+
+or
+
+pipx install git+https://github.com/DraftKinner/zotify.git
+```
 
 ## General Usage
 
@@ -51,7 +66,6 @@ Downloads specified items. Accepts any combination of track, album, playlist, ep
 | Config key              | Command line argument     | Description                                         | Default                                                    |
 | ----------------------- | ------------------------- | --------------------------------------------------- | ---------------------------------------------------------- |
 | path_credentials        | --credentials             | Path to credentials file                            |                                                            |
-| path_archive            | --archive                 | Path to track archive file                          |                                                            |
 | music_library           | --music-library           | Path to root of music library                       |                                                            |
 | podcast_library         | --podcast-library         | Path to root of podcast library                     |                                                            |
 | mixed_playlist_library  | --mixed-playlist-library  | Path to root of mixed content playlist library      |                                                            |
@@ -69,6 +83,7 @@ Downloads specified items. Accepts any combination of track, album, playlist, ep
 | replace_existing        | --replace-existing        | Redownload and replace songs if they already exist  |                                                            |
 | skip_previous           | --skip-previous           | Skip previously downloaded songs in the playlist    |                                                            |
 | skip_duplicates         | --skip-duplicates         | Skip downloading existing track to different album  |                                                            |
+| save_genre              | --save-genre              | Add genre to metadata                               |                                                            |
 
 </details>
 
@@ -116,6 +131,7 @@ file = track.write_audio_stream(output)
 
 file.write_metadata(track.metadata)
 file.write_cover_art(track.get_cover_art())
+file.clean_filename()
 ```
 
 ## Contributing
