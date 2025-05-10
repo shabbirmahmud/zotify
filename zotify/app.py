@@ -368,7 +368,7 @@ class App:
                                 playable.id, self.__config.download_quality
                             )
                     except Exception as err:
-                        self.handle_exception(err, playable.type, count)
+                        self.handle_exception(err, playable.type, count, skip=True)
                         continue
                 elif playable.type == PlayableType.EPISODE:
                     try:
@@ -377,7 +377,7 @@ class App:
                         with Loader("Fetching episode..."):
                             track = self.__session.get_episode(playable.id)
                     except Exception as err:
-                        self.handle_exception(err, playable.type, count)
+                        self.handle_exception(err, playable.type, count, skip=True)
                         continue
                 else:
                     Logger.log(
@@ -467,15 +467,19 @@ class App:
         err: str,
         playable_type: PlayableType | None = None,
         count: int | None = None,
+        skip: bool | None = None,
     ) -> None:
-        if "EX01" in err:
+
+        if skip:
             Logger.log(
                 LogChannel.SKIPS, f"Skipping {playable_type.value} #{count}: {err}"
             )
+
+        if "EX01" in str(err):
             try:
                 self.__session.rate_limiter.handle_server_limit_hit(True)
             except Exception as e:
                 self.handle_exception(e)
-        if "EX02" in err:
+        if "EX02" in str(err):
             Logger.log(LogChannel.ERRORS, "Server too busy or down. Try again later")
             exit(1)
