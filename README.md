@@ -28,11 +28,11 @@ Optionally requires FFmpeg to save tracks as anything other than Ogg Vorbis.
 
 Enter the following command in terminal to install the latest stable version of Zotify.
 ```text
-python -m pip install git+https://github.com/DraftKinner/zotify.git@v1.0.0
+python -m pip install git+https://github.com/DraftKinner/zotify.git@v1.0.1
 
 or
 
-pipx install git+https://github.com/DraftKinner/zotify.git@v1.0.0
+pipx install git+https://github.com/DraftKinner/zotify.git@v1.0.1
 ```
 
 Or to install the latest version, use:
