@@ -219,18 +219,18 @@ class Artist(Collection):
     def __init__(self, b62_id: str, api: ApiClient, config: Config = Config()):
         super().__init__(api)
         artist = api.get_metadata_4_artist(ArtistId.from_base62(b62_id))
-        
-        # Process all content types: albums, singles, compilations, and appearances
+
+        # Only include albums and singles for now. Other groups require filtering.
         all_groups = []
         if artist.album_group:
             all_groups.extend(artist.album_group)
         if artist.single_group:
             all_groups.extend(artist.single_group)
         if artist.compilation_group:
-            all_groups.extend(artist.compilation_group)
+            pass
         if artist.appears_on_group:
-            all_groups.extend(artist.appears_on_group)
-            
+            pass
+
         for album_group in all_groups:
             try:
                 album = api.get_metadata_4_album(

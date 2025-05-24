@@ -1,4 +1,16 @@
-# STILL IN DEVELOPMENT, EVERYTHING HERE IS SUBJECT TO CHANGE
+# Changelog
+
+## UNRELEASED
+
+### Changes
+
+- Changed artist downloads to include only albums and singles. Tracks in compilation and "Appears on" groups need to be filtered to only include those by the requested artist.
+
+### Additions
+
+### Removals
+
+### Fixes
 
 ## v1.0.0 (Added in this fork)
 
