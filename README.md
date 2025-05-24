@@ -72,11 +72,11 @@ pipx install git+https://github.com/DraftKinner/zotify.git@v1.0.1
 
 Or to install the latest version, use:
 ```text
-python -m pip install git+https://github.com/DraftKinner/zotify.git
+python -m pip install git+https://github.com/DraftKinner/zotify.git@dev
 
 or
 
-pipx install git+https://github.com/DraftKinner/zotify.git
+pipx install git+https://github.com/DraftKinner/zotify.git@dev
 ```
 
 ## General Usage
