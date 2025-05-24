@@ -203,7 +203,7 @@ class Track(PlayableContentFeeder.LoadedStream, Playable):
             MetadataEntry("album_artists", [a.name for a in self.album.artist]),
             MetadataEntry("artist", self.artist[0].name),
             MetadataEntry("artists", [a.name for a in self.artist]),
-            MetadataEntry("date", f"{date.year}-{date.month}-{date.day}"),
+            MetadataEntry("date", f"{date.year}-{date.month:0>2}-{date.day:0>2}"),
             MetadataEntry("disc", self.disc_number),
             MetadataEntry("discnumber", self.disc_number),
             MetadataEntry("disctotal", disc_total),
