@@ -24,7 +24,42 @@ Built on [Librespot](https://github.com/kokarare1212/librespot-python).
 
 Requires Python 3.11 or greater. \
 Optionally requires FFmpeg to save tracks as anything other than Ogg Vorbis.
-(FFmpeg installation instructions available [here](https://github.com/DraftKinner/zotify/blob/main/INSTALLATION.md))
+<details><summary>Full installation instructions with FFmpeg</summary>
+
+<details><summary>Windows</summary>
+
+This guide uses *Scoop* (https://scoop.sh) to simplify installing prerequisites and *pipx* to manage Zotify itself. 
+There are other ways to install and run Zotify on Windows but this is the official recommendation, other methods of installation will not receive support.
+
+- Open PowerShell (cmd will not work)
+- Install Scoop by running:
+  - `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser`
+  - `irm get.scoop.sh | iex`
+- After installing scoop run: `scoop install python ffmpeg-shared git`
+- Install pipx:
+  - `python3 -m pip install --user pipx`
+  - `python3 -m pipx ensurepath`
+- Now close PowerShell and reopen it to ensure the pipx command is available. Proceed to install zotify using either of the commands below.
+</details>
+
+<details><summary>macOS</summary>
+
+- Open the Terminal app
+- Install *Homebrew* (https://brew.sh) by running: `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+- After installing Homebrew run: `brew install python@3.11 pipx ffmpeg git`
+- Setup pipx: `pipx ensurepath`
+- Proceed to install zotify using either of the commands below.
+</details>
+
+<details><summary>Linux (Most Popular Distributions)</summary>
+
+- Install `python3`, `pip` (if a separate package), `ffmpeg`, and `git` from your distribution's package manager or software center.
+- Then install pipx, either from your package manager or through pip with: `python3 -m pip install --user pipx`
+- Proceed to install zotify using either of the commands below.
+</details>
+
+</details>
+<br>
 
 Enter the following command in terminal to install the latest stable version of Zotify.
 ```text
