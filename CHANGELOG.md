@@ -12,6 +12,7 @@
 ### Removals
 
 ### Fixes
+- Fixed synced lyrics output not working
 
 ## v1.0.0 (Added in this fork)
 

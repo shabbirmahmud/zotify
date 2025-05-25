@@ -26,18 +26,18 @@ LYRICS_URL = "https://sp" + "client.wg.sp" + "otify.com/color-lyrics/v2/track/"
 class Lyrics:
     def __init__(self, lyrics: dict, **kwargs):
         self.__lines = []
-        self.__sync_type = lyrics["lyrics"]["syncType"]
-        for line in lyrics["lyrics"]["lines"]:
+        self.__sync_type = lyrics["syncType"]
+        for line in lyrics["lines"]:
             self.__lines.append(line["words"] + "\n")
-        if self.__sync_type == "line_synced":
+        if self.__sync_type.lower() == "line_synced":
             self.__lines_synced = []
             for line in lyrics["lines"]:
-                timestamp = int(line["start_time_ms"])
+                timestamp = int(line["startTimeMs"])
                 ts_minutes = str(floor(timestamp / 60000)).zfill(2)
                 ts_seconds = str(floor((timestamp % 60000) / 1000)).zfill(2)
                 ts_millis = str(floor(timestamp % 1000))[:2].zfill(2)
                 self.__lines_synced.append(
-                    f"[{ts_minutes}:{ts_seconds}.{ts_millis}]{line.words}\n"
+                    f"[{ts_minutes}:{ts_seconds}.{ts_millis}]{line["words"]}\n"
                 )
 
     def save(self, path: Path | str, prefer_synced: bool = True) -> None:
@@ -49,7 +49,7 @@ class Lyrics:
         """
         if not isinstance(path, Path):
             path = Path(path).expanduser()
-        if self.__sync_type == "line_synced" and prefer_synced:
+        if self.__sync_type.lower() == "line_synced" and prefer_synced:
             with open(f"{path}.lrc", "w+", encoding="utf-8") as f:
                 f.writelines(self.__lines_synced)
         else:
@@ -247,7 +247,7 @@ class Track(PlayableContentFeeder.LoadedStream, Playable):
                 self.__api.invoke_url(
                     LYRICS_URL + bytes_to_base62(self.track.gid) + lyrics_request,
                     raw_url=True,
-                )
+                )["lyrics"]
             )
             return self.__lyrics
 
