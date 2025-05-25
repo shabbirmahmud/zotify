@@ -7,6 +7,7 @@
 - Changed artist downloads to include only albums and singles. Tracks in compilation and "Appears on" groups need to be filtered to only include those by the requested artist.
 
 ### Additions
+- Added implementation for `--all-artists` as it was included as a config parameter but was unimplemented.
 
 ### Removals
 

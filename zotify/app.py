@@ -390,6 +390,8 @@ class App:
                 track.metadata.extend(playable.metadata)
                 if self.__config.save_genre:
                     track.add_genre()
+                if self.__config.all_artists:
+                    track.add_all_artists()
                 try:
                     output = track.create_output(
                         self.__config.audio_format.value.ext,

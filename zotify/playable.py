@@ -264,6 +264,20 @@ class Track(PlayableContentFeeder.LoadedStream, Playable):
             [MetadataEntry("genre", genre[0] if len(genre) > 0 else "None")]
         )
 
+    def add_all_artists(self) -> None:
+        if len(self.artist) > 1:
+            # Replace artist entry with one that contains all artists
+            idx = 0
+            for m in self.metadata:
+                if m.name == "artist":
+                    break
+                idx += 1
+            self.metadata.pop(idx)
+
+            self.metadata.extend(
+                [MetadataEntry("artist", [a.name for a in self.artist])]
+            )
+
 
 class Episode(PlayableContentFeeder.LoadedStream, Playable):
     def __init__(self, episode: PlayableContentFeeder.LoadedStream, api):
