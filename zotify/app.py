@@ -406,6 +406,22 @@ class App:
                     )
                     continue
 
+                # Download lyrics
+                self.download_lyrics(playable, track, output)
+                if self.__config.lyrics_only:
+                    if not self.__config.lyrics_file:
+                        Logger.log(
+                            LogChannel.WARNINGS,
+                            "Cannot use --lyrics-only parameter if --lyrics-file is false",
+                        )
+                        exit(0)
+                    Logger.log(
+                        LogChannel.DOWNLOADS,
+                        f"\nDownloaded {track.name} lyrics ({count}/{total})",
+                    )
+                    self.__session.rate_limiter.clear_consec_hits()
+                    continue
+
                 # Download track
                 with Logger.progress(
                     desc=f"({count}/{total}) {track.name}",
@@ -414,20 +430,6 @@ class App:
                     file = track.write_audio_stream(
                         output, p_bar, self.__config.download_real_time
                     )
-
-                # Download lyrics
-                if playable.type == PlayableType.TRACK and self.__config.lyrics_file:
-                    if not self.__session.is_premium():
-                        Logger.log(
-                            LogChannel.SKIPS,
-                            f'Failed to save lyrics for "{track.name}": Lyrics are only available to premium users',
-                        )
-                    else:
-                        with Loader("Fetching lyrics..."):
-                            try:
-                                track.get_lyrics().save(output)
-                            except FileNotFoundError as e:
-                                Logger.log(LogChannel.SKIPS, str(e))
                 Logger.log(
                     LogChannel.DOWNLOADS, f"\nDownloaded {track.name} ({count}/{total})"
                 )
@@ -485,3 +487,19 @@ class App:
         if "EX02" in str(err):
             Logger.log(LogChannel.ERRORS, "Server too busy or down. Try again later")
             exit(1)
+
+    def download_lyrics(
+        self, playable: PlayableType, track: Track, output: Path
+    ) -> None:
+        if playable.type == PlayableType.TRACK and self.__config.lyrics_file:
+            if not self.__session.is_premium():
+                Logger.log(
+                    LogChannel.SKIPS,
+                    f'Failed to save lyrics for "{track.name}": Lyrics are only available to premium users',
+                )
+            else:
+                with Loader("Fetching lyrics..."):
+                    try:
+                        track.get_lyrics().save(output)
+                    except FileNotFoundError as e:
+                        Logger.log(LogChannel.SKIPS, str(e))
