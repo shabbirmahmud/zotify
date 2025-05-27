@@ -292,6 +292,19 @@ class ApiClient(LibrespotApiClient):
         except KeyError:
             return data
 
+    def build_request(
+        self,
+        method: str,
+        suffix: str,
+        headers: dict[str, Any] | None,
+        body: bytes | None,
+    ):
+        if headers is not None:
+            headers["Accept-Languange"] = self.__session.language()
+        else:
+            headers = {"Accept-Language": self.__session.language()}
+        return super().build_request(method, suffix, headers, body)
+
     def __get_token(self) -> str:
         return (
             self.__session.tokens()
