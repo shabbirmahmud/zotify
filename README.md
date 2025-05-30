@@ -183,6 +183,8 @@ file.clean_filename()
 
 Pull requests are always welcome, but if adding an entirely new feature we encourage you to create an issue proposing the feature first so we can ensure it's something that fits the scope of the project.
 
+When reporting bugs or requesting features, ***PLEASE*** check current and closed issues first. Duplicates will be closed immediately.
+
 Zotify aims to be a comprehensive and user-friendly tool for downloading music and podcasts.
 It is designed to be simple by default but offer a high level of configuration for users that want it.
 All new contributions should follow this principle to keep the program consistent.
