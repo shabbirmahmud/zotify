@@ -118,6 +118,7 @@ Downloads specified items. Accepts any combination of track, album, playlist, ep
 | language                | --language                | Language for metadata, ISO 639-1 language code      |                                                            |
 | lyrics_file             | --lyrics-file             | Save lyrics to a file                               |                                                            |
 | lyrics_only             | --lyrics-only             | Only download lyrics and not actual audio           |                                                            |
+| create_playlist_file    | --playlist-file           | Save playlist information to an m3u8 file           |                                                            |
 | save_metadata           | --save-metadata           | Save metadata, required for other metadata options  |                                                            |
 | save_genre              | --save-genre              | Add genre to metadata                               |                                                            |
 | all_artists             | --all-artists             | Add all track artists to artist tag in metadata     |                                                            |

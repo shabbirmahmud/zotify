@@ -341,6 +341,23 @@ class App:
         count = 0
         total = sum(len(c.playables) for c in collections)
         for collection in collections:
+            if self.__config.create_playlist_file and not isinstance(
+                collection, (Track, Episode)
+            ):
+                if collection.path is None:
+                    collection.set_path()
+                if isinstance(collection, Artist):
+                    # Make sure playlist file goes in the requested artist's folder as
+                    # discovery sometimes includes other artists as main contributor
+                    playlist_file = Path(
+                        f"{self.__config.album_library}/{collection.name}/{collection.name}.m3u8"
+                    )
+                else:
+                    playlist_file = Path(f"{collection.path}/{collection.name}.m3u8")
+                playlist_file.parent.mkdir(parents=True, exist_ok=True)
+                with open(playlist_file, "w", encoding="utf-8") as f:
+                    f.write("#EXTM3U\n")
+
             for playable in collection.playables:
                 count += 1
 
@@ -465,6 +482,14 @@ class App:
 
                 # Reset rate limit counter for every successful download
                 self.__session.rate_limiter.clear_consec_hits()
+
+                # Add entry to playlist file
+                if self.__config.create_playlist_file and not isinstance(
+                    collection, (Track, Episode)
+                ):
+                    with open(playlist_file, "a", encoding="utf-8") as f:
+                        f.write(f"#EXTINF:{track.duration},\n")
+                        f.write(f"{output}.{self.__config.audio_format.value.ext}\n")
 
     def handle_exception(
         self,

@@ -10,6 +10,7 @@
 - Added implementation for `--all-artists` as it was included as a config parameter but was unimplemented.
 - Added implementation for `--lyrics-only` as it was included as a config parameter but was unimplemented.
 - Added implementation for `--language` as it was included as a config parameter but was only partially implemented.
+- Added implementation for `--playlist-file` as it was included as a config parameter but was unimplemented.
 
 ### Removals
 
