@@ -298,12 +298,13 @@ class ApiClient(LibrespotApiClient):
         suffix: str,
         headers: dict[str, Any] | None,
         body: bytes | None,
+        url: str | None,
     ):
         if headers is not None:
             headers["Accept-Languange"] = self.__session.language()
         else:
             headers = {"Accept-Language": self.__session.language()}
-        return super().build_request(method, suffix, headers, body)
+        return super().build_request(method, suffix, headers, body, url)
 
     def __get_token(self) -> str:
         return (
