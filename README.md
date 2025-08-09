@@ -63,11 +63,11 @@ There are other ways to install and run Zotify on Windows but this is the offici
 
 Enter the following command in terminal to install the latest stable version of Zotify.
 ```text
-python -m pip install git+https://github.com/DraftKinner/zotify.git@v1.1.0
+python -m pip install git+https://github.com/DraftKinner/zotify.git@v1.1.1
 
 or
 
-pipx install git+https://github.com/DraftKinner/zotify.git@v1.1.0
+pipx install git+https://github.com/DraftKinner/zotify.git@v1.1.1
 ```
 
 Or to install the latest version, use:
