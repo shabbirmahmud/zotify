@@ -408,7 +408,10 @@ class App:
                 if self.__config.save_genre:
                     track.add_genre()
                 if self.__config.all_artists:
-                    track.add_all_artists()
+                    try:
+                        track.add_all_artists()
+                    except AttributeError:
+                        pass  # Episode
                 try:
                     output = track.create_output(
                         self.__config.audio_format.value.ext,
